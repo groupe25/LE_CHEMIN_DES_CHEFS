@@ -161,7 +161,6 @@ class PionsLayout(QWidget):
                 self.name.setIcon(icon1)
                 self.name.setIconSize(QSize(64, 64))
                 self.name.setObjectName("b_0_0")
-                # self.name.focusWidget(self.b_4_4)
 
 
 
