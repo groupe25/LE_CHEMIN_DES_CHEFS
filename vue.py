@@ -74,6 +74,7 @@ class fenPrincipale(QMainWindow):
                 button.setToolTip(str(i) + str(j))
                 self.btn[(i,j)] = button
 
+
     def centrerSurEcran(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -89,6 +90,37 @@ class fenPrincipale(QMainWindow):
             icon = QIcon()
             icon.addPixmap(QPixmap(DATA + pion.image), QIcon.Normal, QIcon.Off)
             self.btn[(pion.i, pion.j)].setIcon(icon)
+
+    def mousePressEvent(self, event):
+        # self.btn[(pion.i, pion.j)].mousePressEvent(event)
+        super().mousePressEvent(event)
+        # event.accept()
+        print("bouton souris pressed")
+        # self.moving.radarview.ask_inspection(self.flight)
+        #
+        # self.route_item = self.add_flight_route()
+        # self.state = self.state_dragging
+
+    # def mouseReleaseEvent(self,event):
+    #     # reçu même si en dehors de l'item ! spécialité de Qt, qui permet la localité du code
+    #     super().mouseReleaseEvent(event)
+    #
+    #     if self.state == self.state_dragging:
+    #         event.accept()
+    #         self.remove_flight_route()
+    #         self.state = self.state_idle
+    #
+    # def mouseMoveEvent(self, event):
+    #     super().mouseMoveEvent(event)
+    #
+    #     if self.state == self.state_dragging:
+    #         event.accept()
+    #         # ce qu'on veut c'est mettre le temps de l'appli au temps correspondant au plot le plus proche du curseur
+    #
+    #         # changement de repère : calcul de la position du curseur dans les coordonnées du monde (celles des plots)
+    #         scenePos = self.mapToScene(event.pos())  # du coup l'interaction est insensible au pan and zoom
+    #         (x0, y0) = scenePos.x(), scenePos.y()
+
 
 
 class Plateau(QWidget):
@@ -133,6 +165,11 @@ class Button(QPushButton):
         self.i = i
         self.j = j
 
+    def mousePressEvent(self, event):
+        # self.btn[(pion.i, pion.j)].mousePressEvent(event)
+        super().mousePressEvent(event)
+        # event.accept()
+        print("souris pressed sur bouton : ", self.i, "  ", self.j)
 
 
 
