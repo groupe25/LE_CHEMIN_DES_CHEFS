@@ -5,7 +5,7 @@ __author__ = 'IENAC15 - groupe 25'
 
 from model import DATA
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton
-from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap
+from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap, QDragEnterEvent, QHoverEvent, QDragLeaveEvent
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize
 
 
@@ -20,11 +20,14 @@ MARGE = TAILLE_FEN // 10 # marge fenêtre
 TAILLE_CASE = TAILLE_FEN // 10
 TAILLE_BTN = TAILLE_CASE
 DECALAGE = TAILLE_CASE // 2
+BLANC = "background-color:rgba(255,255,255,255);"
+TRANSPARENT = "background-color: rgba(255,255,255,0) ;"
 
 
-class fenPrincipale(QMainWindow):
+class Window(QMainWindow):
     def __init__(self):
-        QMainWindow.__init__(self)
+        # super().__init__()
+        super(Window, self).__init__()
         winSize = min(QDesktopWidget().height(), QDesktopWidget().width())  # dim fenetre vs écran
         self.resize(RATIO * winSize, RATIO * winSize)
         # self.setFixedSize(RATIO * winSize, RATIO * winSize)
@@ -53,11 +56,14 @@ class fenPrincipale(QMainWindow):
         self.toolbar = self.addToolBar('Exit')
         self.toolbar.addAction(actionQuitter)
         self.setDockNestingEnabled(False)
+        # centralWidget.setParent(self)
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
+        centralWidget.blockSignals(False)
+        centralWidget.setMouseTracking(True)  ####  ???
         centralWidget.setParent(self)
         centralWidget.setGeometry(0, 0, TAILLE_FEN, TAILLE_FEN)
-        centralWidget.setStyleSheet("background-color:rgba(255,255,255,255);")
+        centralWidget.setStyleSheet(BLANC)
         plateau = Plateau()
         plateau.setParent(centralWidget)
         plateau.setGeometry(MARGE, MARGE, PLATEAUSIZE, PLATEAUSIZE)
@@ -66,13 +72,16 @@ class fenPrincipale(QMainWindow):
             for j in range(0, N):
                 button = Button(i, j)
                 button.setParent(centralWidget)
+                button.setMouseTracking(True)    ####  ???
                 button.setObjectName("b_" + str(i) + "_" + str(j))
                 button.setGeometry(QRect(DECALAGE + TAILLE_CASE * i, DECALAGE + TAILLE_CASE * j, TAILLE_BTN, TAILLE_BTN))
                 button.setFlat(True)
-                button.setStyleSheet("background-color: rgba(255,255,255,0) ;")
+                button.setAcceptDrops(True)
+                button.setStyleSheet(TRANSPARENT)
                 button.setIconSize(QSize(64, 64))
-                button.setToolTip(str(i) + str(j))
+                button.setToolTip(str(i) +"_" + str(j))
                 self.btn[(i,j)] = button
+
 
 
     def centrerSurEcran(self):
@@ -92,34 +101,17 @@ class fenPrincipale(QMainWindow):
             self.btn[(pion.i, pion.j)].setIcon(icon)
 
     def mousePressEvent(self, event):
-        # self.btn[(pion.i, pion.j)].mousePressEvent(event)
-        super().mousePressEvent(event)
-        # event.accept()
-        print("bouton souris pressed")
-        # self.moving.radarview.ask_inspection(self.flight)
-        #
-        # self.route_item = self.add_flight_route()
-        # self.state = self.state_dragging
+        self.mousePressEvent(event)
+        event.accept()
+        self.setMouseTracking(True)  ### ???
+        print("mouse press event dans class Window")
 
-    # def mouseReleaseEvent(self,event):
-    #     # reçu même si en dehors de l'item ! spécialité de Qt, qui permet la localité du code
+    # def mouseReleaseEvent(self, event):
     #     super().mouseReleaseEvent(event)
-    #
-    #     if self.state == self.state_dragging:
-    #         event.accept()
-    #         self.remove_flight_route()
-    #         self.state = self.state_idle
     #
     # def mouseMoveEvent(self, event):
     #     super().mouseMoveEvent(event)
-    #
-    #     if self.state == self.state_dragging:
-    #         event.accept()
-    #         # ce qu'on veut c'est mettre le temps de l'appli au temps correspondant au plot le plus proche du curseur
-    #
-    #         # changement de repère : calcul de la position du curseur dans les coordonnées du monde (celles des plots)
-    #         scenePos = self.mapToScene(event.pos())  # du coup l'interaction est insensible au pan and zoom
-    #         (x0, y0) = scenePos.x(), scenePos.y()
+
 
 
 
@@ -159,6 +151,7 @@ class Plateau(QWidget):
         qp.drawRect(4 * TAILLE_CASE - b, 4 * TAILLE_CASE - b, a, a)
 
 
+
 class Button(QPushButton):
     def __init__(self, i, j):
         super().__init__()
@@ -166,17 +159,9 @@ class Button(QPushButton):
         self.j = j
 
     def mousePressEvent(self, event):
-        # self.btn[(pion.i, pion.j)].mousePressEvent(event)
-        super().mousePressEvent(event)
-        # event.accept()
+        # super().mousePressEvent(event)
+        event.accept()
         print("souris pressed sur bouton : ", self.i, "  ", self.j)
-
-
-
-
-
-
-
 
 
 
