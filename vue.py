@@ -7,6 +7,7 @@ from model import DATA
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap, QDragEnterEvent, QHoverEvent, QDragLeaveEvent
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize
+import model
 
 
 N = 9  # 9 intersections  donc 8 cases
@@ -70,7 +71,7 @@ class Window(QMainWindow):
         self.btn = {} # dico de boutons
         for i in range(0, N):
             for j in range(0, N):
-                button = Button(i, j)
+                button = Button(self,i, j)
                 button.setParent(centralWidget)
                 button.setMouseTracking(True)    ####  ???
                 button.setObjectName("b_" + str(i) + "_" + str(j))
@@ -90,18 +91,32 @@ class Window(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+    def image_pion(self,code_pion):
+        if code_pion==1:
+            image='pion1.png'
+        elif code_pion==2:
+            image='pion2.png'
+        elif code_pion==11:
+            image='chef1.png'
+        elif code_pion==12:
+            image='chef2.png'
+        else:
+            image=''
+        return image
+
     def draw_pions(self, jeu):
         """
         :param jeu: type list contenant des types Pions
         :return:
         """
-        for pion in jeu:
-            icon = QIcon()
-            icon.addPixmap(QPixmap(DATA + pion.image), QIcon.Normal, QIcon.Off)
-            self.btn[(pion.i, pion.j)].setIcon(icon)
+        for i in range(N):
+            for j in range(N):
+                icon = QIcon()
+                icon.addPixmap(QPixmap(DATA +self.image_pion(jeu[i][j])), QIcon.Normal, QIcon.Off)
+                self.btn[(i,j)].setIcon(icon)
 
     def mousePressEvent(self, event):
-        self.mousePressEvent(event)
+        super().mousePressEvent(event)
         event.accept()
         self.setMouseTracking(True)  ### ???
         print("mouse press event dans class Window")
@@ -124,6 +139,8 @@ class Plateau(QWidget):
                        (4, 2), (3, 2), (3, 1), (2, 2), (1, 1), (1, 2), \
                        (0, 2), (1, 3), (0, 4), (1, 4), (1, 5), (2, 4), \
                        (3, 5), (3, 7), (4, 8)]
+
+        #self.jeu = model.Jeu(first,jeu)
 
 
     def paintEvent(self, e):
@@ -153,16 +170,18 @@ class Plateau(QWidget):
 
 
 class Button(QPushButton):
-    def __init__(self, i, j):
+    def __init__(self,win, i, j):
         super().__init__()
         self.i = i
         self.j = j
+        self.win =win
 
     def mousePressEvent(self, event):
         # super().mousePressEvent(event)
         event.accept()
         print("souris pressed sur bouton : ", self.i, "  ", self.j)
-
+        model.Jeu.jouer(self,self.i,self.j)
+        self.win.draw_pions()
 
 
 
