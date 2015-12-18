@@ -24,6 +24,8 @@ BLANC = "background-color:rgba(255,255,255,255);"
 TRANSPARENT = "background-color: rgba(255,255,255,0) ;"
 
 
+# Ajout d'une branche kad
+
 class Window(QMainWindow):
     def __init__(self):
         # super().__init__()
