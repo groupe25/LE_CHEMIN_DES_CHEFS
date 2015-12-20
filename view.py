@@ -3,11 +3,11 @@ __author__ = 'IENAC15 - groupe 25'
 # -*-coding: utf-8 -*-
 
 
-from model import DATA
-from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton
-from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap, QDragEnterEvent, QHoverEvent, QDragLeaveEvent
+from model import DATA, Jeu
+from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel
+from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize
-import model
+
 
 
 N = 9  # 9 intersections  donc 8 cases
@@ -26,24 +26,25 @@ TRANSPARENT = "background-color: rgba(255,255,255,0) ;"
 
 
 class Window(QMainWindow):
-    def __init__(self):
-        # super().__init__()
+    def __init__(self, matrice_jeu):
         super(Window, self).__init__()
+        self.image_pion = {1 : "pion1.png", 2 : "pion2.png", 11 : "chef1.png", 12 : "chef2.png", 0: ""}
         winSize = min(QDesktopWidget().height(), QDesktopWidget().width())  # dim fenetre vs écran
         self.resize(RATIO * winSize, RATIO * winSize)
+        self.setWindowIcon(QIcon(DATA + "logo_enac.png"))
         # self.setFixedSize(RATIO * winSize, RATIO * winSize)
         self.centrerSurEcran()
         self.initMenu()
+        self.jeu = Jeu(matrice_jeu)
+        self.afficheTour(self.jeu.tour, self.centralWidget())
 
     def initMenu(self):
         self.setWindowTitle('Le chemin des chefs')
-        self.setWindowIcon(QIcon(DATA + 'general.png'))
+        self.setWindowIcon(QIcon(DATA + "logo_enac.png"))
         menuFichier = self.menuBar().addMenu("&Fichier")
-        # menuEdition = self.menuBar().addMenu("&Edition")
-        # menuAffichage = self.menuBar().addMenu("&Affichage")
         actionNouvellePartie = menuFichier.addAction("&Nouvelle partie")
         actionNouvellePartie.setShortcut("Ctrl+N")
-        actionNouvellePartie.setIcon(QIcon(DATA + 'general.png'))
+        actionNouvellePartie.setIcon(QIcon(DATA + "logo_enac.png"))
         actionChargerPartie = menuFichier.addAction("&Charger une partie")
         actionChargerPartie.setShortcut("Ctrl+C")
         actionEnregistrerPartie = menuFichier.addAction("&Enregistrer la partie")
@@ -57,33 +58,46 @@ class Window(QMainWindow):
         self.toolbar = self.addToolBar('Exit')
         self.toolbar.addAction(actionQuitter)
         self.setDockNestingEnabled(False)
-        # centralWidget.setParent(self)
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
         centralWidget.blockSignals(False)
-        centralWidget.setMouseTracking(True)  ####  ???
         centralWidget.setParent(self)
         centralWidget.setGeometry(0, 0, TAILLE_FEN, TAILLE_FEN)
         centralWidget.setStyleSheet(BLANC)
         plateau = Plateau()
         plateau.setParent(centralWidget)
         plateau.setGeometry(MARGE, MARGE, PLATEAUSIZE, PLATEAUSIZE)
-        self.btn = {} # dico de boutons
+
+        # "Joueur 1 : c'est votre tour !"
+        self.btn = {} # dico des boutons qui effectuent un pavage ou recouvrement du plateau
+        # chaque bouton symbolise une intersection dans la grille constituant le plateau de jeu.
         for i in range(0, N):
             for j in range(0, N):
                 button = Button(self,i, j)
                 button.setParent(centralWidget)
-                button.setMouseTracking(True)    ####  ???
-                button.setObjectName("b_" + str(i) + "_" + str(j))
+                # button.setObjectName("b_" + str(i) + "_" + str(j))
                 button.setGeometry(QRect(DECALAGE + TAILLE_CASE * i, DECALAGE + TAILLE_CASE * j, TAILLE_BTN, TAILLE_BTN))
                 button.setFlat(True)
-                button.setAcceptDrops(True)
+                # button.setAcceptDrops(True)
                 button.setStyleSheet(TRANSPARENT)
                 button.setIconSize(QSize(64, 64))
-                button.setToolTip(str(i) +"_" + str(j))
+                # button.setToolTip(str(i) +"_" + str(j))
                 self.btn[(i,j)] = button
 
-
+    def afficheTour(self, num_joueur, widgette_parent):
+        """ Informe le joueur dont c'est le "tour" de jouer
+        :param num_joueur: joueur 1 ou 2
+        :param widgette_parent: widget contenant le QLabel
+        :return:
+        """
+        aVousDeJouer = QLabel()
+        aVousDeJouer.setParent(widgette_parent)
+        txt = "Joueur {} : C'est à toi de jouer !!!!!".format(num_joueur)
+        z = MARGE
+        aVousDeJouer.setText(txt)
+        x = PLATEAUSIZE / 2
+        y = MARGE / 3 if num_joueur == 1 else TAILLE_FEN - MARGE / 2
+        aVousDeJouer.setGeometry(x, y, 300, 20)
 
     def centrerSurEcran(self):
         qr = self.frameGeometry()
@@ -91,20 +105,8 @@ class Window(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def image_pion(self,code_pion):
-        if code_pion==1:
-            image='pion1.png'
-        elif code_pion==2:
-            image='pion2.png'
-        elif code_pion==11:
-            image='chef1.png'
-        elif code_pion==12:
-            image='chef2.png'
-        else:
-            image=''
-        return image
 
-    def draw_pions(self, jeu):
+    def draw_pions(self, mat_jeu):
         """
         :param jeu: type list contenant des types Pions
         :return:
@@ -112,22 +114,9 @@ class Window(QMainWindow):
         for i in range(N):
             for j in range(N):
                 icon = QIcon()
-                icon.addPixmap(QPixmap(DATA +self.image_pion(jeu[i][j])), QIcon.Normal, QIcon.Off)
+                # utilisation de la méthode get() de la classe python dictionnaire pour la fonctionnalité valeur par défaut
+                icon.addPixmap(QPixmap(DATA + self.image_pion.get(mat_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
                 self.btn[(i,j)].setIcon(icon)
-
-    def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        event.accept()
-        self.setMouseTracking(True)  ### ???
-        print("mouse press event dans class Window")
-
-    # def mouseReleaseEvent(self, event):
-    #     super().mouseReleaseEvent(event)
-    #
-    # def mouseMoveEvent(self, event):
-    #     super().mouseMoveEvent(event)
-
-
 
 
 class Plateau(QWidget):
@@ -170,35 +159,17 @@ class Plateau(QWidget):
 
 
 class Button(QPushButton):
-    def __init__(self,win, i, j):
-        super().__init__()
+    def __init__(self, win, i, j):
+        super(Button, self).__init__()
         self.i = i
         self.j = j
-        self.win =win
+        self.win = win
 
     def mousePressEvent(self, event):
         # super().mousePressEvent(event)
         event.accept()
         print("souris pressed sur bouton : ", self.i, "  ", self.j)
-        model.Jeu.jouer(self,self.i,self.j)
-        self.win.draw_pions()
+        # self.
+        self.win.jeu.jouer(self.i, self.j)
+        # self.win.draw_pions(win)
 
-
-
-
-        # # utilisée 1 fois pour produire le chemin complet
-        # @property
-        # def chiefPath(self):
-        #     ''' calcul of the chiefs path considering its symmetry
-        #     :return:chiefs' path as a list ; top left corner position is (0, 0)
-        #     '''
-        #     chemin = [(4,0),(5,1), (5,3), (6,4),(7,3), \
-        #               (7,4),(8,4),(7,5),(8,6),(7,6),(7,7),\
-        #               (6,6),(5,7),(5,6),(4,6),(5,5), (4,4)]
-        #     ch2 = []
-        #     for pt in chemin:
-        #         ch2.append((8 - pt[0], 8 - pt[1]))  # car le chemin est symétrique de centre (4,4)
-        #     ch2.pop()
-        #     ch2.reverse()
-        #     print(chemin + ch2)
-        #     return chemin + ch2
