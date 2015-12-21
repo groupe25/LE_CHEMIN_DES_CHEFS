@@ -41,28 +41,28 @@ class Jeu:
         if self.player == 2 and self.matrice_jeu[i][j] in (2, 12): boule = True
         return boule
 
+    def voisins(self, pos):
+        l = []
+        if pos.x - 1 >= 0: l.append((pos.x - 1, pos.y))
+        if pos.y - 1 >= 0: l.append((pos.x, pos.y - 1))
+        if pos.x + 1 <= 8: l.append((pos.x + 1, pos.y))
+        if pos.y + 1 <= 8: l.append((pos.x, pos.y + 1))
+        return l
+
     def jouer(self, i, j):
         print("right_player :", self.right_player(i, j))
         print("click = ", self.click)
         if self.click == 0 and self.right_player(i, j):
             self.click = 1
             self.pos_depart = Position(i, j)
-            # print("pos depart  ", self.pos_depart)
         elif self.click == 1: # (i, j) est la position arrivee car second click de l'utilisateur
-            self.matrice_jeu[i][j] = self.matrice_jeu[self.pos_depart.x][self.pos_depart.y]
-            self.matrice_jeu[self.pos_depart.x][self.pos_depart.y] = 0
             self.click = 0
-            print("hors switch verif si player switch avant switch :", self.player)
-            # self.player= switch_player2(self.player)
-            self.switch_player()
-            print(" hors switch verif si player après switch :", self.player)
+            if self.matrice_jeu[i][j] == 0 and (i, j) in self.voisins(self.pos_depart) : # le joueur qui a la main fait une action licite
+                self.matrice_jeu[i][j] = self.matrice_jeu[self.pos_depart.x][self.pos_depart.y]
+                self.matrice_jeu[self.pos_depart.x][self.pos_depart.y] = 0
+                self.switch_player()
 
 
-
-def switch_player2(player):
-    if player == 1: player = 2
-    elif player == 2: player = 1
-    return player
 
 
 def load_jeu(filename):
