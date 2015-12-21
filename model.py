@@ -60,7 +60,7 @@ class Jeu:
             if self.matrice_jeu[i][j] == 0 and (i, j) in self.voisins(self.pos_depart) : # le joueur qui a la main fait une action licite
                 self.matrice_jeu[i][j] = self.matrice_jeu[self.pos_depart.x][self.pos_depart.y]
                 self.matrice_jeu[self.pos_depart.x][self.pos_depart.y] = 0
-                self.switch_player()
+                self.switch_player()  # implémenter la modif de l'affichage "A vous de jouer joueur x"
 
 
 

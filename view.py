@@ -39,25 +39,32 @@ class Window(QMainWindow):
         self.affichePlayerCourant(self.jeu.player, self.centralWidget())
 
     def initMenu(self):
-        self.setWindowTitle('Le chemin des chefs')
+        self.setWindowTitle('Le chemin des chefs - IENAC 15 - Groupe 25')
         self.setWindowIcon(QIcon(DATA + "logo_enac.png"))
         menuFichier = self.menuBar().addMenu("&Fichier")
         actionNouvellePartie = menuFichier.addAction("&Nouvelle partie")
+        self.toolbar = self.addToolBar('')
+        self.toolbar.addAction(actionNouvellePartie)
         actionNouvellePartie.setShortcut("Ctrl+N")
-        actionNouvellePartie.setIcon(QIcon(DATA + "logo_enac.png"))
+        actionNouvellePartie.setStatusTip('Nouvelle partie')
+        actionNouvellePartie.setIcon(QIcon(DATA + "new.png"))
         actionChargerPartie = menuFichier.addAction("&Charger une partie")
+        actionChargerPartie.setIcon(QIcon(DATA + "folder.png"))
+        self.toolbar.addAction(actionChargerPartie)
         actionChargerPartie.setShortcut("Ctrl+C")
+        actionChargerPartie.setStatusTip('Charger une partie')
         actionEnregistrerPartie = menuFichier.addAction("&Enregistrer la partie")
+        actionEnregistrerPartie.setIcon(QIcon(DATA + "save.png"))
+        self.toolbar.addAction(actionEnregistrerPartie)
         actionEnregistrerPartie.setShortcut("Ctrl+E")
+        actionEnregistrerPartie.setStatusTip("Sauvegarder la partie")
         actionQuitter = menuFichier.addAction("&Quitter")
+        actionQuitter.triggered.connect(qApp.quit)
         actionQuitter.setIcon(QIcon(DATA + "exit.png"))
         actionQuitter.setShortcut("Ctrl+Q")
-        actionQuitter.setStatusTip('Exit application')
-        actionQuitter.triggered.connect(qApp.quit)
+        actionQuitter.setStatusTip('Quitter l\'application')
         self.statusBar()
-        self.toolbar = self.addToolBar('Exit')
         self.toolbar.addAction(actionQuitter)
-        self.setDockNestingEnabled(False)
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
         centralWidget.blockSignals(False)
@@ -68,8 +75,7 @@ class Window(QMainWindow):
         plateau.setParent(centralWidget)
         plateau.setGeometry(MARGE, MARGE, PLATEAUSIZE, PLATEAUSIZE)
 
-        # "Joueur 1 : c'est votre tour !"
-        self.btn = {} # dico des boutons qui effectuent un pavage ou recouvrement du plateau
+        self.btn = {} # dico des boutons qui effectuent un pavage, ou recouvrement, du plateau
         # chaque bouton symbolise une intersection dans la grille constituant le plateau de jeu.
         for i in range(0, N):
             for j in range(0, N):
@@ -157,7 +163,6 @@ class Button(QPushButton):
         self.win = win
 
     def mousePressEvent(self, event):
-        # super().mousePressEvent(event)
         event.accept()
         print("souris pressed sur bouton : ", self.i, "  ", self.j)
         # self.
