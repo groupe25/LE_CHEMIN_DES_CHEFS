@@ -3,7 +3,7 @@ __author__ = 'IENAC15 - groupe 25'
 # -*-coding: utf-8 -*-
 
 
-from model import DATA, Jeu
+from model import DATA, Jeu, CHEMIN
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize
@@ -36,7 +36,7 @@ class Window(QMainWindow):
         self.centrerSurEcran()
         self.initMenu()
         self.jeu = Jeu(matrice_jeu)
-        self.afficheTour(self.jeu.tour, self.centralWidget())
+        self.affichePlayerCourant(self.jeu.player, self.centralWidget())
 
     def initMenu(self):
         self.setWindowTitle('Le chemin des chefs')
@@ -84,7 +84,7 @@ class Window(QMainWindow):
                 # button.setToolTip(str(i) +"_" + str(j))
                 self.btn[(i,j)] = button
 
-    def afficheTour(self, num_joueur, widgette_parent):
+    def affichePlayerCourant(self, num_joueur, widgette_parent):
         """ Informe le joueur dont c'est le "tour" de jouer
         :param num_joueur: joueur 1 ou 2
         :param widgette_parent: widget contenant le QLabel
@@ -92,7 +92,7 @@ class Window(QMainWindow):
         """
         aVousDeJouer = QLabel()
         aVousDeJouer.setParent(widgette_parent)
-        txt = "Joueur {} : C'est à toi de jouer !!!!!".format(num_joueur)
+        txt = "A vous de jouer Joueur {} !!!!!".format(num_joueur)
         z = MARGE
         aVousDeJouer.setText(txt)
         x = PLATEAUSIZE / 2
@@ -122,15 +122,6 @@ class Window(QMainWindow):
 class Plateau(QWidget):
     def __init__(self):
         super().__init__()
-        self.chemin = [(4, 0), (5, 1), (5, 3), (6, 4), (7, 3), (7, 4), \
-                       (8, 4), (7, 5), (8, 6), (7, 6), (7, 7), (6, 6), \
-                       (5, 7), (5, 6), (4, 6), (5, 5), (4, 4), (3, 3), \
-                       (4, 2), (3, 2), (3, 1), (2, 2), (1, 1), (1, 2), \
-                       (0, 2), (1, 3), (0, 4), (1, 4), (1, 5), (2, 4), \
-                       (3, 5), (3, 7), (4, 8)]
-
-        #self.jeu = model.Jeu(first,jeu)
-
 
     def paintEvent(self, e):
         qp = QPainter()
@@ -147,7 +138,7 @@ class Plateau(QWidget):
         pen = QPen(PATH_COLOR, 6, Qt.SolidLine)
         qp.setPen(pen)
         l = []
-        for pt in self.chemin:
+        for pt in CHEMIN :
             l.append(QPoint( pt[0] * TAILLE_CASE, pt[1] * TAILLE_CASE))
             poly = QPolygon(l)
         qp.drawPolyline(poly)
@@ -171,5 +162,5 @@ class Button(QPushButton):
         print("souris pressed sur bouton : ", self.i, "  ", self.j)
         # self.
         self.win.jeu.jouer(self.i, self.j)
-        # self.win.draw_pions(win)
+        self.win.draw_pions(self.win.jeu.matrice_jeu)
 

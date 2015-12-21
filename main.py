@@ -4,14 +4,13 @@ __author__ = 'IENAC15 - groupe 25'
 
 
 from PyQt5.QtWidgets import QApplication
-
+from PyQt5.QtMultimedia import QSound
 from view import Window
 import sys
 from model import DATA, load_jeu
 
 matrice_jeu = load_jeu(DATA + "init_jeu.txt")
-# for pion in jeu:
-#      print(pion)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

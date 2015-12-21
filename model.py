@@ -6,103 +6,63 @@ from random import randint
 sys.path.insert(0, sys.path[0] + "/data/")
 DATA = sys.path[0]
 DATA = sys.path[0]
-
-
-# class Jeu:
-#     click = 0
-#     pos_depart1 = 0
-#     pos_depart2 = 0
-#     def __init__(self,player, matrice_jeu):
-#         self.player = player
-#         self.matrice = matrice_jeu
-#     #player: 1 ou 2
-#     #click=None
-#     first = randint(1, 2)
-#     tour = first
-#
-#     def right_player(self, i, j):
-#         return self.tour % 2 == self.matrice_jeu[i][j] or self.tour % 2 == (self.matrice_jeu[i][j] + 10) and self.matrice_jeu[i][j] != 0
-#
-#     def jouer(self, i, j):
-#         if self.click == 0 and self.right_player(i, j):
-#             click=1
-#             pos_depart1 = i
-#             pos_depart2 = j
-#         elif self.click == 1:
-#             a = self.matrice_jeu[i][j]
-#             self.matrice_jeu[i][j] = self.matrice_jeu[self.pos_depart1][self.pos_depart2]
-#             if self.matrice_jeu[i][j] == 0:
-#                 self.matrice_jeu[self.pos_depart1][self.pos_depart2] = a
-#             else:
-#                 self.matrice_jeu[self.pos_depart1][self.pos_depart2] = 0
-#             click=0
-
+CHEMIN = [(4, 0), (5, 1), (5, 3), (6, 4), (7, 3), (7, 4), \
+           (8, 4), (7, 5), (8, 6), (7, 6), (7, 7), (6, 6), \
+           (5, 7), (5, 6), (4, 6), (5, 5), (4, 4), (3, 3), \
+           (4, 2), (3, 2), (3, 1), (2, 2), (1, 1), (1, 2), \
+           (0, 2), (1, 3), (0, 4), (1, 4), (1, 5), (2, 4), \
+           (3, 5), (3, 7), (4, 8)]
 
 class Position:
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
+    def __str__(self):
+        return "({}, {})".format(self.x, self.y)
 
 
 class Jeu:
-    click = 0
-    pos_depart = Position(0, 0)
     def __init__(self, matrice_jeu):
         self.matrice_jeu = matrice_jeu
-        self.tour = randint(1, 2)
+        self.player = randint(1, 2)
+        self.click = 0
+        self.pos_depart = Position(0, 0)
+
+    def switch_player(self):
+        # print("avant dans switch self.player = ", self.player)
+        if self.player == 1: self.player = 2
+        elif self.player == 2: self.player = 1
+        # print("après dans switch self.player =", self.player)
 
     def right_player(self, i, j):
-        return (self.tour % 2 == self.matrice_jeu[i][j] or self.tour % 2 == (self.matrice_jeu[i][j] + 10)) and self.matrice_jeu[i][j] != 0
+        boule = False
+        if self.player == 1 and self.matrice_jeu[i][j] in (1, 11): boule = True
+        if self.player == 2 and self.matrice_jeu[i][j] in (2, 12): boule = True
+        return boule
 
     def jouer(self, i, j):
         print("right_player :", self.right_player(i, j))
         print("click = ", self.click)
         if self.click == 0 and self.right_player(i, j):
             self.click = 1
-            pos_depart = Position(i, j)
-            print("pos depart  ",pos_depart)
-        elif self.click == 1:
-            a = self.matrice_jeu[i][j]
-            pos_arrivee = Position(i, j)
-            print("pos arr :", pos_arrivee)
+            self.pos_depart = Position(i, j)
+            # print("pos depart  ", self.pos_depart)
+        elif self.click == 1: # (i, j) est la position arrivee car second click de l'utilisateur
             self.matrice_jeu[i][j] = self.matrice_jeu[self.pos_depart.x][self.pos_depart.y]
-            if self.matrice_jeu[i][j] == 0:
-                self.matrice_jeu[self.pos_depart.x][self.pos_depart.y] = a
-            else:
-                self.matrice_jeu[self.pos_depart.x][self.pos_depart.y] = 0
-            click=0
+            self.matrice_jeu[self.pos_depart.x][self.pos_depart.y] = 0
+            self.click = 0
+            print("hors switch verif si player switch avant switch :", self.player)
+            # self.player= switch_player2(self.player)
+            self.switch_player()
+            print(" hors switch verif si player après switch :", self.player)
 
 
 
-
-
-
-
-# class Jeu:
-#     def __init__(self, matrice_jeu):
-#         self.matrice_jeu = matrice_jeu
-#         self.first = randint(1, 2)
-#
-#     def jouer(self, i, j):
-#         pass
-#         # while self.matrice_jeu[4](4) not in (11, 12):
-#         if self.matrice_jeu[i][j] % 2 == 0 :  # 0 si pion (i, j) de type 2 ou 12 sinon 1 ou 11
-#             print( )
-#
-#     def right_player(self, i, j):
-#          return self.tour % 2 == self.matrice_jeu[i][j] or self.tour % 2 == (self.matrice_jeu[i][j] + 10) and self.matrice_jeu[i][j] != 0
-
-
-class Pion:
-    def __init__(self, image, i, j):
-        self.image = image
-        self.i = i
-        self.j = j
-
-    def __str__(self):
-        return "image : {} - position {} {}".format(self.image, self.i, self.j)
-
+def switch_player2(player):
+    if player == 1: player = 2
+    elif player == 2: player = 1
+    return player
 
 
 def load_jeu(filename):
@@ -121,7 +81,7 @@ def load_jeu(filename):
 
     :return:
     """
-    matrice_jeu = np.zeros((9, 9), dtype=int)
+    matrice_jeu = np.zeros((9, 9), dtype = int)
     with open(filename, 'r') as f:
         for line in f:
             w = line.strip().split()
@@ -132,16 +92,3 @@ def load_jeu(filename):
 def save_jeu(filename):
     pass
 
-
-
-
-# jeu_init=[\
-# [1,1,0,0,0,0,0,2,2],\
-# [1,1,0,0,0,0,0,2,2],\
-# [1,1,0,0,0,0,0,2,2],\
-# [1,1,0,0,0,0,0,2,2],\
-# [11,1,0,0,0,0,0,2,12],\
-# [1,1,0,0,0,0,0,2,2],\
-# [1,1,0,0,0,0,0,2,2],\
-# [1,1,0,0,0,0,0,2,2],\
-# [1,1,0,0,0,0,0,2,2]]
