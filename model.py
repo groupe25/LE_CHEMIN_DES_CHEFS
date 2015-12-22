@@ -1,11 +1,12 @@
 __author__ = 'IENAC15 - groupe 25'
 import sys
 import numpy as np
-from random import randint
 
-sys.path.insert(0, sys.path[0] + "/data/")
+from random import randint
+sys.path.insert(0, sys.path[0] + "/ressources/")
 DATA = sys.path[0]
 DATA = sys.path[0]
+N = 9  # 9 intersections  donc 8 cases
 CHEMIN = [(4, 0), (5, 1), (5, 3), (6, 4), (7, 3), (7, 4), \
            (8, 4), (7, 5), (8, 6), (7, 6), (7, 7), (6, 6), \
            (5, 7), (5, 6), (4, 6), (5, 5), (4, 4), (3, 3), \
@@ -23,17 +24,16 @@ class Position:
 
 
 class Jeu:
-    def __init__(self, matrice_jeu):
+    def __init__(self,first_player, matrice_jeu):
         self.matrice_jeu = matrice_jeu
-        self.player = randint(1, 2)
+        # self.player = randint(1, 2)
+        self.player = first_player
         self.click = 0
         self.pos_depart = Position(0, 0)
 
     def switch_player(self):
-        # print("avant dans switch self.player = ", self.player)
         if self.player == 1: self.player = 2
         elif self.player == 2: self.player = 1
-        # print("après dans switch self.player =", self.player)
 
     def right_player(self, i, j):
         boule = False
@@ -42,6 +42,12 @@ class Jeu:
         return boule
 
     def voisins(self, pos):
+        """
+        # position voisines possibles pour les soldats: PROBLEME les chefs doivent pouvoir se déplacer obliquement
+        contrairement aux soldat
+        :param pos:
+        :return:
+        """
         l = []
         if pos.x - 1 >= 0: l.append((pos.x - 1, pos.y))
         if pos.y - 1 >= 0: l.append((pos.x, pos.y - 1))
@@ -62,6 +68,15 @@ class Jeu:
                 self.matrice_jeu[self.pos_depart.x][self.pos_depart.y] = 0
                 self.switch_player()  # implémenter la modif de l'affichage "A vous de jouer joueur x"
 
+    def save_jeu(self, filename):
+        with open(filename, 'w') as f:
+            f.write(str(self.player) + "\n")
+            # for line in f:
+            for i in range(N):
+                for j in range(N):
+                    if self.matrice_jeu[i][j] != 0:
+                        f.write(str(i) + " " + str(j) + " " + str(self.matrice_jeu[i][j]) + "\n")
+
 
 
 
@@ -69,7 +84,10 @@ def load_jeu(filename):
     """
     :param filename: nom du fichier txt à charger par exemple init_jeu.txt
     qui représente la matrice qui modélise la répartition des pions. cf. ./data/init_jeu.txt
-    structure des données : i j code_pion
+    structure des données :
+    la première ligne  commence par 0,  1,  ou 2 correspondant au joueur
+     qui commence la partie : 0 correspond au cas où le first player est choisi au hasard
+    i j code_pion
     i : indice de colonne = abscisse quantifiée de gauche à droite du plateau de jeu
     j : indice de ligne = ordonnée selon axe vertical décroissant.
     l'origine du plateau (i, j) == (0, 0) est située "top-left"
@@ -81,14 +99,15 @@ def load_jeu(filename):
 
     :return:
     """
-    matrice_jeu = np.zeros((9, 9), dtype = int)
+    matrice_jeu = np.zeros((9, 9), dtype=int)
     with open(filename, 'r') as f:
+        player = int(f.readline())
+        if player == 0 : player = randint(1, 2) #
         for line in f:
             w = line.strip().split()
             matrice_jeu[int(w[0])][int(w[1])] = int(w[2])
-    return matrice_jeu
+    return matrice_jeu, player
 
 
-def save_jeu(filename):
-    pass
+
 
