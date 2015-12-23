@@ -23,7 +23,8 @@ class Position:
         return "({}, {})".format(self.x, self.y)
 
 
-class Jeu:
+class Jeu(object):
+
     def __init__(self,first_player, matrice_jeu):
         self.matrice_jeu = matrice_jeu
         # self.player = randint(1, 2)
@@ -71,7 +72,6 @@ class Jeu:
     def save_jeu(self, filename):
         with open(filename, 'w') as f:
             f.write(str(self.player) + "\n")
-            # for line in f:
             for i in range(N):
                 for j in range(N):
                     if self.matrice_jeu[i][j] != 0:

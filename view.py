@@ -8,8 +8,7 @@ __author__ = 'IENAC15 - groupe 25'
 from model import N, DATA, Jeu, CHEMIN, load_jeu # , save_jeu
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, QApplication, QFileDialog
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap
-from PyQt5.QtCore import Qt, QPoint, QRect, QSize
-from random import randint
+from PyQt5.QtCore import Qt, QPoint, QRect, QSize, pyqtSignal
 
 RATIO = 0.9  # ratio d'occupation de la fenêtre vis à vis de l'écran
 PLATEAUSIZE = 800
@@ -37,6 +36,7 @@ def initialise_jeu(filename):
 
 
 class Window(QMainWindow):
+
     def __init__(self, first_player, matrice_jeu):
         super(Window, self).__init__()
         self.image_pion = {1: "pion1.png", 2: "pion2.png", 11: "chef1.png", 12: "chef2.png", 0: ""}
@@ -91,8 +91,6 @@ class Window(QMainWindow):
         centralWidget.setParent(self)
         centralWidget.setGeometry(0, 0, TAILLE_FEN, TAILLE_FEN)
         centralWidget.setStyleSheet(BLANC)
-        # self.file_dialog = QFileDialog()
-        # self.file_dialog.setParent(self)
         plateau = Plateau()
         plateau.setParent(centralWidget)
         plateau.setGeometry(MARGE, MARGE, PLATEAUSIZE, PLATEAUSIZE)
@@ -103,12 +101,12 @@ class Window(QMainWindow):
             for j in range(0, N):
                 button = Button(self, i, j)
                 button.setParent(centralWidget)
-                button.setGeometry(
-                    QRect(DECALAGE + TAILLE_CASE * i, DECALAGE + TAILLE_CASE * j, TAILLE_BTN, TAILLE_BTN))
-                button.setFlat(True)
+                # button.setGeometry(
+                #     QRect(DECALAGE + TAILLE_CASE * i, DECALAGE + TAILLE_CASE * j, TAILLE_BTN, TAILLE_BTN))
+                # button.setFlat(True)
+                # button.setStyleSheet(TRANSPARENT)
+                # button.setIconSize(QSize(64, 64))
                 # button.setAcceptDrops(True)
-                button.setStyleSheet(TRANSPARENT)
-                button.setIconSize(QSize(64, 64))
                 self.btn[(i, j)] = button
 
     def nouvelle_partie(self):
@@ -210,10 +208,18 @@ class Button(QPushButton):
         self.i = i
         self.j = j
         self.win = win
+        self.setGeometry(\
+            QRect(DECALAGE + TAILLE_CASE * i, \
+                  DECALAGE + TAILLE_CASE * j, \
+                  TAILLE_BTN, TAILLE_BTN))
+        self.setFlat(True)
+        self.setStyleSheet(TRANSPARENT)
+        self.setIconSize(QSize(64, 64))
 
     def mousePressEvent(self, event):
         event.accept()
         print("souris pressed sur bouton : ", self.i, "  ", self.j)
-        # self.
         self.win.jeu.jouer(self.i, self.j)
         self.win.draw_pions(self.win.jeu.matrice_jeu)
+        print("player courant = ", self.win.jeu.player)
+        self.win.affichePlayerCourant(self.win.jeu.player)
