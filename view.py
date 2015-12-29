@@ -1,11 +1,14 @@
 import os
-
+RESSOURCES = os.getcwd() + os.sep + "ressources" + os.sep
+BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
+# RESSOURCES = os.curdir + os.sep + "ressources" + os.sep
+import sys
 __author__ = 'IENAC15 - groupe 25'
 # ! /usr/bin/python3
 # -*-coding: utf-8 -*-
 
 
-from model import N, DATA, Jeu, CHEMIN, load_jeu # , save_jeu
+from model import N, Jeu, CHEMIN, load_jeu # , save_jeu
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, QApplication, QFileDialog
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize, pyqtSignal
@@ -26,7 +29,7 @@ RED = "background-color:rgba(250,250,0,150);"
 
 
 def initialise_jeu(filename):
-    l = list(load_jeu(DATA + filename))
+    l = list(load_jeu(RESSOURCES + filename))
     matrice_jeu = l[0]
     first_player = l[1]
     f = Window(first_player,
@@ -42,8 +45,8 @@ class Window(QMainWindow):
         self.image_pion = {1: "pion1.png", 2: "pion2.png", 11: "chef1.png", 12: "chef2.png", 0: ""}
         winSize = min(QDesktopWidget().height(), QDesktopWidget().width())  # dim fenetre vs écran
         self.resize(RATIO * winSize, RATIO * winSize)
-        self.setWindowIcon(QIcon(DATA + "logo_enac.png"))
-        # self.setFixedSize(RATIO * winSize, RATIO * winSize)
+        self.setWindowIcon(QIcon(RESSOURCES + "logo_enac.png"))
+        # self.setFixedSize(RATIO * winSize, RATIO * winSize) # pour avoir une fenêtre de taille fixée
         self.centrerSurEcran()
         self.initMenu()
         self.jeu = Jeu(first_player, matrice_jeu)
@@ -51,30 +54,42 @@ class Window(QMainWindow):
 
     def initMenu(self):
         self.setWindowTitle('Le chemin des chefs - IENAC 15 - Groupe 25')
-        self.setWindowIcon(QIcon(DATA + "logo_enac.png"))
+        self.setWindowIcon(QIcon(RESSOURCES + "logo_enac.png"))
         menuFichier = self.menuBar().addMenu("&Fichier")
-        actionNouvellePartie = menuFichier.addAction("&Nouvelle partie")
         self.toolbar = self.addToolBar('')
+        # menu et icône nouvelle partie
+        actionNouvellePartie = menuFichier.addAction("&Nouvelle partie")
         self.toolbar.addAction(actionNouvellePartie)
         actionNouvellePartie.setShortcut("Ctrl+N")
         actionNouvellePartie.setStatusTip('Nouvelle partie')
-        actionNouvellePartie.setIcon(QIcon(DATA + "new.png"))
+        actionNouvellePartie.setIcon(QIcon(RESSOURCES + "new.png"))
         actionNouvellePartie.triggered.connect(lambda: self.nouvelle_partie())
+        # menu et icône charger partie
         actionChargerPartie = menuFichier.addAction("&Charger une partie")
-        actionChargerPartie.setIcon(QIcon(DATA + "folder.png"))
+        actionChargerPartie.setIcon(QIcon(RESSOURCES + "folder.png"))
         actionChargerPartie.triggered.connect(lambda: self.charger_partie())
         self.toolbar.addAction(actionChargerPartie)
         actionChargerPartie.setShortcut("Ctrl+C")
         actionChargerPartie.setStatusTip('Charger une partie')
+        # menu et icône enregistrer partie
         actionEnregistrerPartie = menuFichier.addAction("&Enregistrer la partie")
-        actionEnregistrerPartie.setIcon(QIcon(DATA + "save.png"))
+        actionEnregistrerPartie.setIcon(QIcon(RESSOURCES + "save.png"))
         actionEnregistrerPartie.triggered.connect(lambda : self.enregistrer_partie())
         self.toolbar.addAction(actionEnregistrerPartie)
         actionEnregistrerPartie.setShortcut("Ctrl+E")
         actionEnregistrerPartie.setStatusTip("Sauvegarder la partie")
+         # menu et icône aide
+        menuAide = self.menuBar().addMenu("&?")
+        actionRegle = menuAide.addAction("&Règles du jeu")
+        actionRegle.setShortcut("Ctrl+R")
+        actionRegle.setStatusTip('Règles du jeu')
+        actionRegle.setIcon(QIcon(RESSOURCES + 'regle.png'))
+        actionRegle.triggered.connect(lambda: self.ouvrirFichier("chemin_des_chefs.pdf"))
+        self.toolbar.addAction(actionRegle)
+        # menu et icône quitter
         actionQuitter = menuFichier.addAction("&Quitter")
         actionQuitter.triggered.connect(qApp.quit)
-        actionQuitter.setIcon(QIcon(DATA + "exit.png"))
+        actionQuitter.setIcon(QIcon(RESSOURCES + "exit.png"))
         actionQuitter.setShortcut("Ctrl+Q")
         actionQuitter.setStatusTip('Quitter l\'application')
         self.statusBar()
@@ -101,12 +116,6 @@ class Window(QMainWindow):
             for j in range(0, N):
                 button = Button(self, i, j)
                 button.setParent(centralWidget)
-                # button.setGeometry(
-                #     QRect(DECALAGE + TAILLE_CASE * i, DECALAGE + TAILLE_CASE * j, TAILLE_BTN, TAILLE_BTN))
-                # button.setFlat(True)
-                # button.setStyleSheet(TRANSPARENT)
-                # button.setIconSize(QSize(64, 64))
-                # button.setAcceptDrops(True)
                 self.btn[(i, j)] = button
 
     def nouvelle_partie(self):
@@ -114,15 +123,23 @@ class Window(QMainWindow):
         :param filename:
         :return:
         """
-        l = list(load_jeu(DATA + "init_jeu.txt"))
+        l = list(load_jeu(RESSOURCES + "init_jeu.txt"))
         self.jeu.matrice_jeu = l[0]
         self.jeu.player = l[1]
         self.draw_pions(self.jeu.matrice_jeu)  # trace les pions
         self.affichePlayerCourant(self.jeu.player)
 
+    def ouvrirFichier(self, filename):
+        try:
+            # filename = QFileDialog.getOpenFileName(self, 'Ouvrir fichier règles', os.startfile(RESSOURCES + filename))[0]
+            import webbrowser
+            webbrowser.open_new_tab(RESSOURCES + filename)
+        except Exception:
+            print("Problème ouverture fichier ", filename)
+
     def charger_partie(self):
         try:
-            filename = QFileDialog.getOpenFileName(self, 'Charger partie', os.getcwd() + "/game_backups/")[0]
+            filename = QFileDialog.getOpenFileName(self, 'Charger partie', BACKUPS_DIR)[0]
             l = list(load_jeu(filename))
             self.jeu.matrice_jeu = l[0]
             self.jeu.player = l[1]
@@ -134,7 +151,7 @@ class Window(QMainWindow):
 
     def enregistrer_partie(self):
         try:
-            filename = QFileDialog.getSaveFileName(self, 'Enregistrer_partie', os.getcwd() + "/game_backups/")[0]
+            filename = QFileDialog.getSaveFileName(self, 'Enregistrer_partie', BACKUPS_DIR)[0]
             self.jeu.save_jeu(filename)
         except Exception:
             print("Problème lors de l'enregistrement du fichier")
@@ -169,7 +186,7 @@ class Window(QMainWindow):
             for j in range(N):
                 icon = QIcon()
                 # utilisation de la méthode get() de la classe python dictionnaire pour la fonctionnalité valeur par défaut
-                icon.addPixmap(QPixmap(DATA + self.image_pion.get(mat_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
+                icon.addPixmap(QPixmap(RESSOURCES + self.image_pion.get(mat_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
                 self.btn[(i, j)].setIcon(icon)
 
 
@@ -223,3 +240,23 @@ class Button(QPushButton):
         self.win.draw_pions(self.win.jeu.matrice_jeu)
         print("player courant = ", self.win.jeu.player)
         self.win.affichePlayerCourant(self.win.jeu.player)
+
+
+
+
+
+
+
+
+# code poubelle
+#         for i in range(0, N):
+#             for j in range(0, N):
+#                 button = Button(self, i, j)
+#                 button.setParent(centralWidget)
+#                 # button.setGeometry(
+#                 #     QRect(DECALAGE + TAILLE_CASE * i, DECALAGE + TAILLE_CASE * j, TAILLE_BTN, TAILLE_BTN))
+#                 # button.setFlat(True)
+#                 # button.setStyleSheet(TRANSPARENT)
+#                 # button.setIconSize(QSize(64, 64))
+#                 # button.setAcceptDrops(True)
+#                 self.btn[(i, j)] = button

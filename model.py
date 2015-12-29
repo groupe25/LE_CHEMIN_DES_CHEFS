@@ -1,18 +1,30 @@
 __author__ = 'IENAC15 - groupe 25'
-import sys
-import numpy as np
 
+# import os
+# DATA = os.getcwd() + "/ressources/"
+import numpy as np
 from random import randint
-sys.path.insert(0, sys.path[0] + "/ressources/")
-DATA = sys.path[0]
-DATA = sys.path[0]
+
+# import sys
+# sys.path.insert(0, sys.path[0] + "/ressources/")
+# DATA = sys.path[0]
+# DATA = sys.path[0]
+
 N = 9  # 9 intersections  donc 8 cases
-CHEMIN = [(4, 0), (5, 1), (5, 3), (6, 4), (7, 3), (7, 4), \
-           (8, 4), (7, 5), (8, 6), (7, 6), (7, 7), (6, 6), \
-           (5, 7), (5, 6), (4, 6), (5, 5), (4, 4), (3, 3), \
-           (4, 2), (3, 2), (3, 1), (2, 2), (1, 1), (1, 2), \
-           (0, 2), (1, 3), (0, 4), (1, 4), (1, 5), (2, 4), \
-           (3, 5), (3, 7), (4, 8)]
+CHEMIN = [(4, 0), (5, 1), (5, 3), (6, 4), (7, 3), (7, 4),
+          (8, 4), (7, 5), (8, 6), (7, 6), (7, 7), (6, 6),
+          (5, 7), (5, 6), (4, 6), (5, 5), (4, 4), (3, 3),
+          (4, 2), (3, 2), (3, 1), (2, 2), (1, 1), (1, 2),
+          (0, 2), (1, 3), (0, 4), (1, 4), (1, 5), (2, 4),
+          (3, 5), (3, 7), (4, 8)]
+
+CHEF1_PATH = [(4, 0), (5, 1), (5, 3), (6, 4), (7, 3), (7, 4),
+              (8, 4), (7, 5), (8, 6), (7, 6), (7, 7), (6, 6),
+              (5, 7), (5, 6), (4, 6), (5, 5), (4, 4)]
+
+CHEF2_PATH = [(4, 4), (3, 3), (4, 2), (3, 2), (3, 1), (2, 2),
+              (1, 1), (1, 2), (0, 2), (1, 3), (0, 4), (1, 4),
+              (1, 5), (2, 4), (3, 5), (3, 7), (4, 8)]
 
 class Position:
     def __init__(self, x, y):
@@ -83,7 +95,7 @@ class Jeu(object):
 def load_jeu(filename):
     """
     :param filename: nom du fichier txt à charger par exemple init_jeu.txt
-    qui représente la matrice qui modélise la répartition des pions. cf. ./data/init_jeu.txt
+    qui représente la matrice qui modélise la répartition des pions. cf. ./ressources/init_jeu.txt
     structure des données :
     la première ligne  commence par 0,  1,  ou 2 correspondant au joueur
      qui commence la partie : 0 correspond au cas où le first player est choisi au hasard
