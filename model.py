@@ -2,6 +2,7 @@ __author__ = 'IENAC15 - groupe 25'
 import numpy as np
 import collections
 from random import randint
+
 # import networkx
 
 N = 9  # 9 intersections  donc 8 cases
@@ -53,8 +54,6 @@ class Jeu(object):
     def posLibre(self, pos):
         return self.matrice_jeu[pos.x][pos.y] == 0
 
-
-
     def movePion(self, pos_depart, pos_arrivee):
         self.matrice_jeu[pos_arrivee.x][pos_arrivee.y] = self.matrice_jeu[self.pos_depart.x][self.pos_depart.y]
         self.matrice_jeu[self.pos_depart.x][self.pos_depart.y] = 0
@@ -76,11 +75,10 @@ class Jeu(object):
         g = []
         for (i, j) in l:
             if (self.player == 1 and self.matrice_jeu[i, j] == 2) or \
-               (self.player == 2 and self.matrice_jeu[i, j] == 1):
-                g.append((i,j))
+                    (self.player == 2 and self.matrice_jeu[i, j] == 1):
+                g.append((i, j))
         # print("pos voisines avec pions adverse :", g)
         return g
-
 
     def existeCaptureObligatoire(self, pos):
         """
@@ -91,14 +89,13 @@ class Jeu(object):
         """
         boule = False
         g = self.listePosAdversesVoisines(pos)
-        if len(g) == 0: return boule # cas pas d'adversaires voisins
+        if len(g) == 0: return boule  # cas pas d'adversaires voisins
         for (i, j) in g:
-            voisinsAdversaire = Position(i,j)
-            l = self.posVoisinesPion(voisinsAdversaire) # positions voisines du ou des adversaires
-            for (i,j) in l:
-                if self.matrice_jeu[i,j] == 0 : boule = True
+            voisinsAdversaire = Position(i, j)
+            l = self.posVoisinesPion(voisinsAdversaire)  # positions voisines du ou des adversaires
+            for (i, j) in l:
+                if self.matrice_jeu[i, j] == 0: boule = True
         return boule
-
 
     def listePosPriseObligatoire(self):
         """
@@ -113,10 +110,10 @@ class Jeu(object):
         l = []
         for i in range(N):
             for j in range(N):
-                pos = Position(i,j)
-                if self.matrice_jeu[i,j] == self.player and self.existeCaptureObligatoire(pos):
-# par exemple si player=1 on ne considère les pos avec des pions1 qui ont un voisin qui est un adversaire "capturable"
-                 l.append((i,j))
+                pos = Position(i, j)
+                if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(pos):
+                    # par exemple si player=1 on ne considère les pos avec des pions1 qui ont un voisin qui est un adversaire "capturable"
+                    l.append((i, j))
         return l
 
     def firstClickOk(self, i, j):
@@ -128,17 +125,16 @@ class Jeu(object):
         """
         boule = False
         l = self.listePosPriseObligatoire()
-        print("listePosPriseObligatoire : " , l)
-        if len(l) == 0: # pas de prise oblig détectée alors le joueur est libre de cliquer (1er click)
+        print("listePosPriseObligatoire : ", l)
+        if len(l) == 0:  # pas de prise oblig détectée alors le joueur est libre de cliquer (1er click)
             # sur n'importe laquelle de ses pièces
             if (self.player == 1 and self.matrice_jeu[i][j] in (1, 11)) or \
-            (self.player == 2 and self.matrice_jeu[i][j] in (2, 12)):
-                boule =True
-        elif (i,j) in l: # le joueur doit prendre un ou des pions adverses
+                    (self.player == 2 and self.matrice_jeu[i][j] in (2, 12)):
+                boule = True
+        elif (i, j) in l:  # le joueur doit prendre un ou des pions adverses
             boule = True
         print("boule ds firstclickok", boule)
         return boule
-
 
     # def plusLongueCapture(self, pos):
     #     """
@@ -171,8 +167,8 @@ class Jeu(object):
         if pos.y - 1 >= 0: l.append((pos.x, pos.y - 1))
         if pos.x + 1 <= 8: l.append((pos.x + 1, pos.y))
         if pos.y + 1 <= 8: l.append((pos.x, pos.y + 1))
-        try :
-            l.remove((4,4))
+        try:
+            l.remove((4, 4))
         except ValueError:
             pass
         return l
@@ -201,7 +197,7 @@ class Jeu(object):
     def jouer(self, i, j):
         print("firstClickOK :", self.firstClickOk(i, j))
         print("click = ", self.click)
-        if self.click == 0 and self.firstClickOk(i, j): # 1er click du joueur qui a la main
+        if self.click == 0 and self.firstClickOk(i, j):  # 1er click du joueur qui a la main
             self.click = 1
             self.pos_depart = Position(i, j)
             # self.plusLongueCapture(self.pos_depart)
@@ -211,8 +207,6 @@ class Jeu(object):
             if self.secondClickOk(self.pos_depart, pos_arrivee):
                 self.movePion(self.pos_depart, pos_arrivee)
                 self.switch_player()
-
-
 
     def save_jeu(self, filename):
         with open(filename, 'w') as f:
