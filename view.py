@@ -242,7 +242,7 @@ class Button(QPushButton):
         self.win.jeu.jouer(self.i, self.j)
         print("click ", self.win.jeu.click)
         self.win.draw_pions(self.win.jeu.matrice_jeu)
-        if self.win.jeu.firstClickOk(self.i, self.j):
-            pass
+        # if self.win.jeu.firstClickOk(self.i, self.j):
+        #     pass
         print("player courant = ", self.win.jeu.player)
         self.win.affichePlayerCourant(self.win.jeu.player)
