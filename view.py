@@ -1,15 +1,17 @@
 import os
 import time
+
 RESSOURCES = os.getcwd() + os.sep + "ressources" + os.sep
 BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
 # RESSOURCES = os.curdir + os.sep + "ressources" + os.sep
 import sys
+
 __author__ = 'IENAC15 - groupe 25'
 # ! /usr/bin/python3
 # -*-coding: utf-8 -*-
 
 
-from model import N, Jeu, CHEMIN, load_jeu # , save_jeu
+from model import N, Jeu, CHEMIN, load_jeu  # , save_jeu
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, QApplication, QFileDialog
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize, pyqtSignal
@@ -30,6 +32,10 @@ RED = "background-color:rgba(250,250,0,150);"
 
 
 def initialise_jeu(filename):
+    """
+    Crée la fenetre, le plateau et le pavage du plateau par des boutons transparents et affiche les pion
+    :param filename: fichier avec les positions initiales des pions
+    """
     l = list(load_jeu(RESSOURCES + filename))
     matrice_jeu = l[0]
     first_player = l[1]
@@ -40,7 +46,6 @@ def initialise_jeu(filename):
 
 
 class Window(QMainWindow):
-
     def __init__(self, first_player, matrice_jeu):
         super(Window, self).__init__()
         self.image_pion = {1: "pion1.png", 2: "pion2.png", 11: "chef1.png", 12: "chef2.png", 0: ""}
@@ -75,11 +80,11 @@ class Window(QMainWindow):
         # menu et icône enregistrer partie
         actionEnregistrerPartie = menuFichier.addAction("&Enregistrer la partie")
         actionEnregistrerPartie.setIcon(QIcon(RESSOURCES + "save.png"))
-        actionEnregistrerPartie.triggered.connect(lambda : self.enregistrer_partie())
+        actionEnregistrerPartie.triggered.connect(lambda: self.enregistrer_partie())
         self.toolbar.addAction(actionEnregistrerPartie)
         actionEnregistrerPartie.setShortcut("Ctrl+E")
         actionEnregistrerPartie.setStatusTip("Sauvegarder la partie")
-         # menu et icône aide
+        # menu et icône aide
         menuAide = self.menuBar().addMenu("&?")
         actionRegle = menuAide.addAction("&Règles du jeu")
         actionRegle.setShortcut("Ctrl+R")
@@ -116,7 +121,7 @@ class Window(QMainWindow):
             for j in range(0, N):
                 button = Button(self, i, j)
                 button.setParent(centralWidget)
-                button.setToolTip(str(i) + "_"+ str(j))
+                button.setToolTip(str(i) + "_" + str(j))
                 self.btn[(i, j)] = button
 
     def nouvelle_partie(self):
@@ -148,7 +153,6 @@ class Window(QMainWindow):
             self.affichePlayerCourant(self.jeu.player)
         except Exception:
             print("Abandon chargement jeu ou Problème en lien avec l'ouverture de fichier")
-
 
     def enregistrer_partie(self):
         try:
@@ -189,8 +193,6 @@ class Window(QMainWindow):
                 self.btn[(i, j)].setIcon(icon)
 
 
-
-
 class Plateau(QWidget):
     def __init__(self):
         super().__init__()
@@ -226,14 +228,13 @@ class Button(QPushButton):
         self.i = i
         self.j = j
         self.win = win
-        self.setGeometry(\
-            QRect(DECALAGE + TAILLE_CASE * i, \
-                  DECALAGE + TAILLE_CASE * j, \
-                  TAILLE_BTN, TAILLE_BTN))
+        self.setGeometry( \
+                QRect(DECALAGE + TAILLE_CASE * i, \
+                      DECALAGE + TAILLE_CASE * j, \
+                      TAILLE_BTN, TAILLE_BTN))
         self.setFlat(True)
         self.setStyleSheet(TRANSPARENT)
         self.setIconSize(QSize(64, 64))
-
 
     def mousePressEvent(self, event):
         event.accept()
@@ -241,38 +242,7 @@ class Button(QPushButton):
         self.win.jeu.jouer(self.i, self.j)
         print("click ", self.win.jeu.click)
         self.win.draw_pions(self.win.jeu.matrice_jeu)
-        if self.win.jeu.firstClickOk(self.i,self.j):
-             pass
+        if self.win.jeu.firstClickOk(self.i, self.j):
+            pass
         print("player courant = ", self.win.jeu.player)
         self.win.affichePlayerCourant(self.win.jeu.player)
-
-
-
-
-
-
-
-
-# code poubelle
-#         for i in range(0, N):
-#             for j in range(0, N):
-#                 button = Button(self, i, j)
-#                 button.setParent(centralWidget)
-#                 # button.setGeometry(
-#                 #     QRect(DECALAGE + TAILLE_CASE * i, DECALAGE + TAILLE_CASE * j, TAILLE_BTN, TAILLE_BTN))
-#                 # button.setFlat(True)
-#                 # button.setStyleSheet(TRANSPARENT)
-#                 # button.setIconSize(QSize(64, 64))
-#                 # button.setAcceptDrops(True)
-#                 self.btn[(i, j)] = button
-
-
-    # def forbid(self,i, j):
-    #     icon = QIcon()
-    #     icon.addPixmap(QPixmap(RESSOURCES + "forbid.png"), QIcon.Normal, QIcon.Off)
-    #     self.win.btn[(i, j)].setIcon(icon)
-    #     print("self.setIcon(icon)")
-    #     time.sleep(1)
-    #     print("self.setIcon(icon)")
-    #     icon.addPixmap(QPixmap(RESSOURCES + self.win.image_pion.get(self.win.jeu.matrice_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
-    #     self.setIcon(icon)
