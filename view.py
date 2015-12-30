@@ -1,4 +1,5 @@
 import os
+import time
 RESSOURCES = os.getcwd() + os.sep + "ressources" + os.sep
 BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
 # RESSOURCES = os.curdir + os.sep + "ressources" + os.sep
@@ -109,13 +110,13 @@ class Window(QMainWindow):
         plateau = Plateau()
         plateau.setParent(centralWidget)
         plateau.setGeometry(MARGE, MARGE, PLATEAUSIZE, PLATEAUSIZE)
-
         self.btn = {}  # dico des boutons qui effectuent un pavage, ou recouvrement, du plateau
         # chaque bouton symbolise une intersection dans la grille constituant le plateau de jeu.
         for i in range(0, N):
             for j in range(0, N):
                 button = Button(self, i, j)
                 button.setParent(centralWidget)
+                button.setToolTip(str(i) + "_"+ str(j))
                 self.btn[(i, j)] = button
 
     def nouvelle_partie(self):
@@ -156,8 +157,6 @@ class Window(QMainWindow):
         except Exception:
             print("Problème lors de l'enregistrement du fichier")
 
-
-
     def affichePlayerCourant(self, num_joueur):
         """ Informe le joueur dont c'est le "tour" de jouer
         :param num_joueur: joueur 1 ou 2
@@ -188,6 +187,8 @@ class Window(QMainWindow):
                 # utilisation de la méthode get() de la classe python dictionnaire pour la fonctionnalité valeur par défaut
                 icon.addPixmap(QPixmap(RESSOURCES + self.image_pion.get(mat_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
                 self.btn[(i, j)].setIcon(icon)
+
+
 
 
 class Plateau(QWidget):
@@ -221,7 +222,7 @@ class Plateau(QWidget):
 
 class Button(QPushButton):
     def __init__(self, win, i, j):
-        super(Button, self).__init__()
+        super(Button, self).__init__(win)
         self.i = i
         self.j = j
         self.win = win
@@ -233,11 +234,15 @@ class Button(QPushButton):
         self.setStyleSheet(TRANSPARENT)
         self.setIconSize(QSize(64, 64))
 
+
     def mousePressEvent(self, event):
         event.accept()
         print("souris pressed sur bouton : ", self.i, "  ", self.j)
         self.win.jeu.jouer(self.i, self.j)
+        print("click ", self.win.jeu.click)
         self.win.draw_pions(self.win.jeu.matrice_jeu)
+        if self.win.jeu.firstClickOk(self.i,self.j):
+             pass
         print("player courant = ", self.win.jeu.player)
         self.win.affichePlayerCourant(self.win.jeu.player)
 
@@ -260,3 +265,14 @@ class Button(QPushButton):
 #                 # button.setIconSize(QSize(64, 64))
 #                 # button.setAcceptDrops(True)
 #                 self.btn[(i, j)] = button
+
+
+    # def forbid(self,i, j):
+    #     icon = QIcon()
+    #     icon.addPixmap(QPixmap(RESSOURCES + "forbid.png"), QIcon.Normal, QIcon.Off)
+    #     self.win.btn[(i, j)].setIcon(icon)
+    #     print("self.setIcon(icon)")
+    #     time.sleep(1)
+    #     print("self.setIcon(icon)")
+    #     icon.addPixmap(QPixmap(RESSOURCES + self.win.image_pion.get(self.win.jeu.matrice_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
+    #     self.setIcon(icon)
