@@ -92,6 +92,12 @@ class Window(QMainWindow):
         actionRegle.setIcon(QIcon(RESSOURCES + 'regle.png'))
         actionRegle.triggered.connect(lambda: self.ouvrirFichier("chemin_des_chefs.pdf"))
         self.toolbar.addAction(actionRegle)
+        # menu et icone "recette logicielle"
+        actionRecette = menuAide.addAction("Recette logicielle")
+        actionRecette.setStatusTip('Document de recette logicielle')
+        actionRecette.setIcon(QIcon(RESSOURCES + 'recette.png'))
+        actionRecette.triggered.connect(lambda: self.ouvrirFichier("Recette.ods"))
+        self.toolbar.addAction(actionRecette)
         # menu et icône quitter
         actionQuitter = menuFichier.addAction("&Quitter")
         actionQuitter.triggered.connect(qApp.quit)
