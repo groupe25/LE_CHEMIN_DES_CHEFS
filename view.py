@@ -1,4 +1,4 @@
-__author__ = 'IENAC15 - groupe 25'# ! /usr/bin/python3
+__author__ = 'IENAC15 - groupe 25'  # ! /usr/bin/python3
 # -*-coding: utf-8 -*-
 import os
 import time
@@ -27,6 +27,7 @@ def initialise_jeu(filename):
     f.draw_pions(matrice_jeu)  # trace les pions
     f.show()
 
+
 class Window(QMainWindow):
     def __init__(self, first_player, matrice_jeu):
         super(Window, self).__init__()
@@ -34,7 +35,7 @@ class Window(QMainWindow):
         winSize = min(QDesktopWidget().height(), QDesktopWidget().width())  # dim fenetre vs écran
         # self.resize(RATIO * winSize, RATIO * winSize)
         self.setWindowIcon(QIcon(RESSOURCES + "logo_enac.png"))
-        self.setFixedSize(RATIO * winSize, RATIO * winSize) # pour avoir une fenêtre de taille fixée
+        self.setFixedSize(RATIO * winSize, RATIO * winSize)  # pour avoir une fenêtre de taille fixée
         self.centrerSurEcran()
         self.initMenu()
         self.jeu = Jeu(first_player, matrice_jeu)
@@ -181,6 +182,7 @@ class Window(QMainWindow):
                 icon.addPixmap(QPixmap(RESSOURCES + self.image_pion.get(mat_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
                 self.btn[(i, j)].setIcon(icon)
 
+
 class Plateau(QWidget):
     def __init__(self):
         super().__init__()
@@ -208,6 +210,7 @@ class Plateau(QWidget):
         a = TAILLE_CASE / 5
         b = a / 2
         qp.drawRect(4 * TAILLE_CASE - b, 4 * TAILLE_CASE - b, a, a)
+
 
 class Button(QPushButton):
     def __init__(self, win, i, j):

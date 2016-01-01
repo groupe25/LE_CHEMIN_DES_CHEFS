@@ -1,4 +1,5 @@
 from PyQt5.QtGui import QColor
+
 N = 9  # 9 intersections  donc 8 cases
 
 CHEMIN = [(4, 0), (5, 1), (5, 2), (5, 3), (6, 4), (7, 3),

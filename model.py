@@ -9,9 +9,11 @@ class Noeud(Node):
     def __init__(self):
         super(Node, self).__init__()
 
+
 class Arbre(WGraph):
     def __init__(self):
         super(Arbre, self).__init__()
+
 
 class Position:
     def __init__(self, x, y):
@@ -26,6 +28,7 @@ class Position:
 
     def __repr__(self):
         return "({}, {})".format(self.x, self.y)
+
 
 class Jeu(object):
     def __init__(self, first_player, matrice_jeu):
@@ -88,21 +91,22 @@ class Jeu(object):
         for (i, j) in g:
             voisinAdversaire = Position(i, j)
             boule = self.isPionAdverseVoisinCapturable(pos, voisinAdversaire)
-            if boule: break # il existe au moins une case libre autour de chacun des adversaires : 4 adversaires au max
+            if boule: break  # il existe au moins une case libre autour de chacun des adversaires : 4 adversaires au max
         return boule
 
-    def isPionAdverseVoisinCapturable(self,pos, pos_adv):
+    def isPionAdverseVoisinCapturable(self, pos, pos_adv):
         """
         :param pos: pos pion joueur courant
         :param pos_adv: pos pion adversaire voisin
         :return:booléen
         """
         boule = False
-        pos_prise = Position(2 * pos_adv.x - pos.x, 2 * pos_adv.y - pos.y)# calcul qui renvoie la position de prise "n+2"
-        if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8 : #pos existe car plateau de 9 x 9 position
-            if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0 : # pos libre
+        pos_prise = Position(2 * pos_adv.x - pos.x,
+                             2 * pos_adv.y - pos.y)  # calcul qui renvoie la position de prise "n+2"
+        if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
+            if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0:  # pos libre
                 boule = True
-        return boule #, pos_prise
+        return boule  # , pos_prise
 
     def posVoisinesChef(self, pos):
         """
@@ -137,9 +141,10 @@ class Jeu(object):
         for (i, j) in l:
 
             if (self.player == 1 and self.matrice_jeu[i, j] == 2) or \
-               (self.player == 2 and self.matrice_jeu[i, j] == 1):
-                g.append((i,j))
-                self.plusLongueCapture(Position(i, j)) ; print("appel de plusLongueCapture")
+                    (self.player == 2 and self.matrice_jeu[i, j] == 1):
+                g.append((i, j))
+                self.plusLongueCapture(Position(i, j));
+                print("appel de plusLongueCapture")
         print("pos voisines avec pions adverse :", g)
         return g
 
@@ -167,14 +172,14 @@ class Jeu(object):
         l = []
         for m in range(N):
             for n in range(N):
-                 if (self.player == 1 and self.matrice_jeu[m,n] in (1, 11)) or \
-                    (self.player == 2 and self.matrice_jeu[m,n] in (2, 12)):
-                     l.append((m,n)) # contient les pos des pions du joueur courant
-        listePosPionsQuiDoiventCapturer = [(i,j) for (i,j) in l if self.matrice_jeu[i, j] not in (11, 12)
-                         and self.existeCaptureObligatoire(Position(i,j))]
-        if (pos.x, pos.y) not in l: # click hors pions joueur courant
+                if (self.player == 1 and self.matrice_jeu[m, n] in (1, 11)) or \
+                        (self.player == 2 and self.matrice_jeu[m, n] in (2, 12)):
+                    l.append((m, n))  # contient les pos des pions du joueur courant
+        listePosPionsQuiDoiventCapturer = [(i, j) for (i, j) in l if self.matrice_jeu[i, j] not in (11, 12)
+                                           and self.existeCaptureObligatoire(Position(i, j))]
+        if (pos.x, pos.y) not in l:  # click hors pions joueur courant
             boule = False
-        elif len(listePosPionsQuiDoiventCapturer) == 0 or (pos.x,pos.y) in listePosPionsQuiDoiventCapturer :
+        elif len(listePosPionsQuiDoiventCapturer) == 0 or (pos.x, pos.y) in listePosPionsQuiDoiventCapturer:
             boule = True
         return boule
 
@@ -192,8 +197,8 @@ class Jeu(object):
         return boule
 
     def jouer(self, i, j):
-        pos = Position(i,j)
-        if self.click == 0 and self.firstClickValide(pos): # 1er click du joueur qui a la main
+        pos = Position(i, j)
+        if self.click == 0 and self.firstClickValide(pos):  # 1er click du joueur qui a la main
             self.click = 1
             self.pos_depart = Position(i, j)
             # self.plusLongueCapture(self.pos_depart)
@@ -209,7 +214,7 @@ class Jeu(object):
             f.write(str(self.player) + "\n")
             for i in range(N):
                 for j in range(N):
-                    if self.matrice_jeu[i,j] != 0:
+                    if self.matrice_jeu[i, j] != 0:
                         f.write(str(i) + " " + str(j) + " " + str(self.matrice_jeu[i, j]) + "\n")
 
 
