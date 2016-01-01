@@ -1,34 +1,17 @@
+__author__ = 'IENAC15 - groupe 25'# ! /usr/bin/python3
+# -*-coding: utf-8 -*-
 import os
 import time
 
 RESSOURCES = os.getcwd() + os.sep + "ressources" + os.sep
 BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
 # RESSOURCES = os.curdir + os.sep + "ressources" + os.sep
-import sys
 
-__author__ = 'IENAC15 - groupe 25'
-# ! /usr/bin/python3
-# -*-coding: utf-8 -*-
-
-
-from model import N, Jeu, CHEMIN, load_jeu  # , save_jeu
-from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, QApplication, QFileDialog
-from PyQt5.QtGui import QPainter, QColor, QPen, QPolygon, QIcon, QPixmap
-from PyQt5.QtCore import Qt, QPoint, QRect, QSize, pyqtSignal
-
-RATIO = 0.9  # ratio d'occupation de la fenêtre vis à vis de l'écran
-PLATEAUSIZE = 800
-PATH_COLOR = QColor(0, 50, 250)
-RED = QColor(255, 0, 0)
-GREEN = QColor(0, 255, 0)
-TAILLE_FEN = 1000
-MARGE = TAILLE_FEN // 10  # marge fenêtre
-TAILLE_CASE = TAILLE_FEN // 10
-TAILLE_BTN = TAILLE_CASE
-DECALAGE = TAILLE_CASE // 2
-BLANC = "background-color:rgba(255,255,255,255);"
-TRANSPARENT = "background-color: rgba(255,255,255,0) ;"
-RED = "background-color:rgba(250,250,0,150);"
+from constantes import *
+from model import Jeu, load_jeu  # , save_jeu
+from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, QFileDialog
+from PyQt5.QtGui import QPainter, QPen, QPolygon, QIcon, QPixmap
+from PyQt5.QtCore import Qt, QPoint, QRect, QSize
 
 
 def initialise_jeu(filename):
@@ -44,15 +27,14 @@ def initialise_jeu(filename):
     f.draw_pions(matrice_jeu)  # trace les pions
     f.show()
 
-
 class Window(QMainWindow):
     def __init__(self, first_player, matrice_jeu):
         super(Window, self).__init__()
         self.image_pion = {1: "pion1.png", 2: "pion2.png", 11: "chef1.png", 12: "chef2.png", 0: ""}
         winSize = min(QDesktopWidget().height(), QDesktopWidget().width())  # dim fenetre vs écran
-        self.resize(RATIO * winSize, RATIO * winSize)
+        # self.resize(RATIO * winSize, RATIO * winSize)
         self.setWindowIcon(QIcon(RESSOURCES + "logo_enac.png"))
-        # self.setFixedSize(RATIO * winSize, RATIO * winSize) # pour avoir une fenêtre de taille fixée
+        self.setFixedSize(RATIO * winSize, RATIO * winSize) # pour avoir une fenêtre de taille fixée
         self.centrerSurEcran()
         self.initMenu()
         self.jeu = Jeu(first_player, matrice_jeu)
@@ -60,6 +42,7 @@ class Window(QMainWindow):
 
     def initMenu(self):
         self.setWindowTitle('Le chemin des chefs - IENAC 15 - Groupe 25')
+        self.setStatusTip("Cliquer sur le pion à déplacer puis sur la nouvelle position souhaitée.")
         self.setWindowIcon(QIcon(RESSOURCES + "logo_enac.png"))
         menuFichier = self.menuBar().addMenu("&Fichier")
         self.toolbar = self.addToolBar('')
@@ -198,7 +181,6 @@ class Window(QMainWindow):
                 icon.addPixmap(QPixmap(RESSOURCES + self.image_pion.get(mat_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
                 self.btn[(i, j)].setIcon(icon)
 
-
 class Plateau(QWidget):
     def __init__(self):
         super().__init__()
@@ -227,7 +209,6 @@ class Plateau(QWidget):
         b = a / 2
         qp.drawRect(4 * TAILLE_CASE - b, 4 * TAILLE_CASE - b, a, a)
 
-
 class Button(QPushButton):
     def __init__(self, win, i, j):
         super(Button, self).__init__(win)
@@ -248,7 +229,5 @@ class Button(QPushButton):
         self.win.jeu.jouer(self.i, self.j)
         print("click ", self.win.jeu.click)
         self.win.draw_pions(self.win.jeu.matrice_jeu)
-        # if self.win.jeu.firstClickOk(self.i, self.j):
-        #     pass
         print("player courant = ", self.win.jeu.player)
         self.win.affichePlayerCourant(self.win.jeu.player)

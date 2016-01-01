@@ -1,19 +1,17 @@
 __author__ = 'IENAC15 - groupe 25'
+from constantes import *
 import numpy as np
-import collections
 from random import randint
+from graph import Node, WGraph
 
-# import networkx
 
-N = 9  # 9 intersections  donc 8 cases
+class Noeud(Node):
+    def __init__(self):
+        super(Node, self).__init__()
 
-CHEMIN = [(4, 0), (5, 1), (5, 2), (5, 3), (6, 4), (7, 3),
-          (7, 4), (8, 4), (7, 5), (8, 6), (7, 6), (7, 7),
-          (6, 6), (5, 7), (5, 6), (4, 6), (5, 5), (4, 4),
-          (3, 3), (4, 2), (3, 2), (3, 1), (2, 2), (1, 1),
-          (1, 2), (0, 2), (1, 3), (0, 4), (1, 4), (1, 5),
-          (2, 4), (3, 5), (3, 6), (3, 7), (4, 8)]
-
+class Arbre(WGraph):
+    def __init__(self):
+        super(Arbre, self).__init__()
 
 class Position:
     def __init__(self, x, y):
@@ -26,16 +24,15 @@ class Position:
     def __add__(self, other):
         return self.x + other, self.y + other
 
-
+    def __repr__(self):
+        return "({}, {})".format(self.x, self.y)
 
 class Jeu(object):
     def __init__(self, first_player, matrice_jeu):
         self.matrice_jeu = matrice_jeu
-        # self.player = randint(1, 2)
         self.player = first_player
         self.click = 0
         self.pos_depart = Position(0, 0)
-        # self.pos_arrivee = Position(0,0)
 
     def switch_player(self):
         if self.player == 1:
@@ -43,24 +40,12 @@ class Jeu(object):
         elif self.player == 2:
             self.player = 1
 
-    def firstClickOk(self, i, j):
-        """
-        contrôle de la validité du 1er clic du joueur
-        :param i:
-        :param j:
-        :return:
-        """
-        boule = False
-        if self.player == 1 and self.matrice_jeu[i][j] in (1, 11): boule = True
-        if self.player == 2 and self.matrice_jeu[i][j] in (2, 12): boule = True
-        return boule
-
     def posLibre(self, pos):
-        return self.matrice_jeu[pos.x][pos.y] == 0
+        return self.matrice_jeu[pos.x, pos.y] == 0
 
     def movePion(self, pos_depart, pos_arrivee):
-        self.matrice_jeu[pos_arrivee.x][pos_arrivee.y] = self.matrice_jeu[self.pos_depart.x][self.pos_depart.y]
-        self.matrice_jeu[self.pos_depart.x][self.pos_depart.y] = 0
+        self.matrice_jeu[pos_arrivee.x, pos_arrivee.y] = self.matrice_jeu[self.pos_depart.x, self.pos_depart.y]
+        self.matrice_jeu[self.pos_depart.x, self.pos_depart.y] = 0
 
     def capturePions(self, l):
         """
@@ -101,8 +86,8 @@ class Jeu(object):
         g = self.listePosAdversesVoisines(pos)
         if len(g) == 0: return boule  # cas pas d'adversaires voisins
         for (i, j) in g:
-            voisinsAdversaire = Position(i, j)
-            boule = self.isPionAdverseVoisinCapturable(pos, voisinsAdversaire)
+            voisinAdversaire = Position(i, j)
+            boule = self.isPionAdverseVoisinCapturable(pos, voisinAdversaire)
             if boule: break # il existe au moins une case libre autour de chacun des adversaires : 4 adversaires au max
         return boule
 
@@ -115,64 +100,22 @@ class Jeu(object):
         boule = False
         pos_prise = Position(2 * pos_adv.x - pos.x, 2 * pos_adv.y - pos.y)# calcul qui renvoie la position de prise "n+2"
         if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8 : #pos existe car plateau de 9 x 9 position
-            if self.matrice_jeu[pos_prise.x][pos_prise.y] == 0 : # pos libre
+            if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0 : # pos libre
                 boule = True
         return boule #, pos_prise
 
-    def existePosVoisineLibre(self, pos):
+    def posVoisinesChef(self, pos):
         """
-        indique si autour de pos, il y a au moins une position libre = 0
-        A utiliser pour déterminer si un pion adverse est prenable car il existe une pos vide voisine
-        :param pos: position d'un pion
-        :return: boule un booléen = True s'il existe un pos vide
-        """
-        boule = False
-        l = self.posVoisinesPion(pos)  # ici, la liste retournée élimine la case centrale 4 4
-        # un pion soldat ne peut se positionner sur cette case mais a t il le droit de la "traverser"
-        # dans le cas de prise multiple n'induisant pas un positionnement sur cette case ??????????
-        for (i, j) in l:
-            if self.matrice_jeu[i][j] == 0:
-                boule = True ; break
-        return boule
-
-    def listePosPriseObligatoire(self):
-        """
-        Pour tous les pions du jeu on détermine la liste des positions
-        sur lesquelles le joueur doit obligatoirement clicker : Pb : ici on ne tiens
-        pas encore compte des prises multiples. si le joeur adverse joue et provoque
-        en un coup l'appartition de plusieurs possiblités de prises, c'est la plus longue qui
-        doit être prise en considération. MEME PB RECURSIF que pour traiter la validité du second click
-
-        :return: liste des positions des pions du joueur courant qui doivent qui peuvent/doivent prendre
-        au moins un pion adverse.
+        :param pos: position chef
+        :return: retourne une liste avec les positions
+        voisines qui doivent être sur le chemin des chef
         """
         l = []
-        for i in range(N):
-            for j in range(N):
-                pos = Position(i, j)
-                if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(pos):
-                    # par exemple si player=1 on ne considère que les pos avec des pions1 qui ont un voisin qui est un adversaire "capturable"
-                    l.append((i, j))
+        long_chemin = len(CHEMIN)
+        i = CHEMIN.index((pos.x, pos.y))
+        if i - 1 >= 0: l.append(CHEMIN[i - 1])
+        if i + 1 <= long_chemin - 1: l.append(CHEMIN[i + 1])
         return l
-
-    def firstClickOk(self, i, j):
-        """ contrôle de la validité du 1er clic du joueur
-        :param i:
-        :param j:
-        :return:
-        """
-        boule = False
-        l = self.listePosPriseObligatoire()
-        print("listePosPriseObligatoire : ", l)
-        if len(l) == 0:  # pas de prise oblig détectée alors le joueur est libre de cliquer (1er click)
-            # sur n'importe laquelle de ses pièces
-            if (self.player == 1 and self.matrice_jeu[i][j] in (1, 11)) or \
-                    (self.player == 2 and self.matrice_jeu[i][j] in (2, 12)):
-                boule = True
-        elif (i, j) in l:  # le joueur doit prendre un ou des pions adverses
-            boule = True
-        print("boule ds firstclickok", boule)
-        return boule
 
     def plusLongueCapture(self, pos):
         """
@@ -192,6 +135,7 @@ class Jeu(object):
         l = self.posVoisinesPion(pos)
         g = []
         for (i, j) in l:
+
             if (self.player == 1 and self.matrice_jeu[i, j] == 2) or \
                (self.player == 2 and self.matrice_jeu[i, j] == 1):
                 g.append((i,j))
@@ -218,8 +162,24 @@ class Jeu(object):
             pass
         return l
 
-    def secondClickOk(self, pos_depart, pos_arrivee):
-        boule = self.posLibre(pos_arrivee)
+    def firstClickValide(self, pos):
+        boule = False
+        l = []
+        for m in range(N):
+            for n in range(N):
+                 if (self.player == 1 and self.matrice_jeu[m,n] in (1, 11)) or \
+                    (self.player == 2 and self.matrice_jeu[m,n] in (2, 12)):
+                     l.append((m,n)) # contient les pos des pions du joueur courant
+        listePosPionsQuiDoiventCapturer = [(i,j) for (i,j) in l if self.matrice_jeu[i, j] not in (11, 12)
+                         and self.existeCaptureObligatoire(Position(i,j))]
+        if (pos.x, pos.y) not in l: # click hors pions joueur courant
+            boule = False
+        elif len(listePosPionsQuiDoiventCapturer) == 0 or (pos.x,pos.y) in listePosPionsQuiDoiventCapturer :
+            boule = True
+        return boule
+
+    def secondClickValide(self, pos_depart, pos_arrivee):
+        boule = self.posLibre(pos_arrivee) and pos_arrivee != pos_depart
         if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
             boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
             print("pos voisines pions : ", self.posVoisinesPion(self.pos_depart))
@@ -231,25 +191,16 @@ class Jeu(object):
             boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesChef(self.pos_depart)
         return boule
 
-    def posVoisinesChef(self, pos):
-        l = []
-        long_chemin = len(CHEMIN)
-        i = CHEMIN.index((pos.x, pos.y))
-        if i - 1 >= 0: l.append(CHEMIN[i - 1])
-        if i + 1 <= long_chemin - 1: l.append(CHEMIN[i + 1])
-        return l
-
     def jouer(self, i, j):
-        print("firstClickOK :", self.firstClickOk(i, j))
-        print("click = ", self.click)
-        if self.click == 0 and self.firstClickOk(i, j):  # 1er click du joueur qui a la main
+        pos = Position(i,j)
+        if self.click == 0 and self.firstClickValide(pos): # 1er click du joueur qui a la main
             self.click = 1
             self.pos_depart = Position(i, j)
             # self.plusLongueCapture(self.pos_depart)
         elif self.click == 1:  # nb : (i, j) est la position arrivee car second click de l'utilisateur
-            self.click = 0
             pos_arrivee = Position(i, j)  # affectation ajoutée pour rendre le code plus lisible
-            if self.secondClickOk(self.pos_depart, pos_arrivee):
+            self.click = 0
+            if self.secondClickValide(self.pos_depart, pos_arrivee):
                 self.movePion(self.pos_depart, pos_arrivee)
                 self.switch_player()
 
@@ -258,8 +209,8 @@ class Jeu(object):
             f.write(str(self.player) + "\n")
             for i in range(N):
                 for j in range(N):
-                    if self.matrice_jeu[i][j] != 0:
-                        f.write(str(i) + " " + str(j) + " " + str(self.matrice_jeu[i][j]) + "\n")
+                    if self.matrice_jeu[i,j] != 0:
+                        f.write(str(i) + " " + str(j) + " " + str(self.matrice_jeu[i, j]) + "\n")
 
 
 def load_jeu(filename):
@@ -287,23 +238,5 @@ def load_jeu(filename):
         if player == 0: player = randint(1, 2)  #
         for line in f:
             w = line.strip().split()
-            matrice_jeu[int(w[0])][int(w[1])] = int(w[2])
+            matrice_jeu[int(w[0]), int(w[1])] = int(w[2])
     return matrice_jeu, player
-
-
-   # def existeCaptureObligatoire2(self, pos):
-    #     """
-    #     détermine si le pion adverse peut, donc doit, être pris i.e. il existe une case vide voisine du pion adverse
-    #     donc pion prenable
-    #     :param pos:
-    #     :return:
-    #     """
-    #     boule = False
-    #     g = self.listePosAdversesVoisines(pos)
-    #     if len(g) == 0: return boule  # cas pas d'adversaires voisins
-    #     for (i, j) in g:
-    #         voisinsAdversaire = Position(i, j)
-    #         l = self.posVoisinesPion(voisinsAdversaire)  # positions voisines du ou des adversaires
-    #         for (i, j) in l:
-    #             if self.matrice_jeu[i, j] == 0: boule = True
-    #     return boule
