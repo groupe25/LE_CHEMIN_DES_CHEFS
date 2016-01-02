@@ -1,25 +1,85 @@
 from model import Position
 
+import networkx as nx
 
-l = [(4, 0), (5, 1), (5, 2), (5, 3), (6, 4), (7, 3),
-          (7, 4), (8, 4), (7, 5), (8, 6), (7, 6), (7, 7),
-          (6, 6), (5, 7), (5, 6), (4, 6), (5, 5), (4, 4),
-          (3, 3), (4, 2), (3, 2), (3, 1), (2, 2), (1, 1),
-          (1, 2), (0, 2), (1, 3), (0, 4), (1, 4), (1, 5),
-          (2, 4), (3, 5), (3, 6), (3, 7), (4, 8)]
-g=[]
+from model import Arbre, Noeud
 
-for (i,j) in l:
-    g.append(Position(i,j))
-
-
+# tree = Arbre()
+l = [(1,1), (2,2), (3.3)]
+# u = Noeud(l)
+# tree.add_node(u)
+#
+# print("toto")
+# print(tree.get_node(u))
 
 
-pos = Position(i, j)
-print("avant : ", pos)
-if pos in g:pass
 
-print("après : ", pos)
+
+g = nx.Graph()
+g.add_node((1,5), capture=(3,3))
+
+# print(g.neighbors(1))
+
+g.node[(1,5)]['room'] = 714
+
+print(g.node[(1,5)])
+print(g.number_of_nodes())
+print(g.number_of_edges())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# l = [(4, 0), (5, 1), (5, 2), (5, 3), (6, 4), (7, 3),
+#           (7, 4), (8, 4), (7, 5), (8, 6), (7, 6), (7, 7),
+#           (6, 6), (5, 7), (5, 6), (4, 6), (5, 5), (4, 4),
+#           (3, 3), (4, 2), (3, 2), (3, 1), (2, 2), (1, 1),
+#           (1, 2), (0, 2), (1, 3), (0, 4), (1, 4), (1, 5),
+#           (2, 4), (3, 5), (3, 6), (3, 7), (4, 8)]
+# g=[]
+#
+# for (i,j) in l:
+#     g.append(Position(i,j))
+#
+#
+#
+#
+# pos = Position(i, j)
+# print("avant : ", pos)
+# if pos in g:pass
+#
+# print("après : ", pos)
 
 
 

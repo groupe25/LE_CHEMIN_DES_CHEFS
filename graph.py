@@ -25,7 +25,6 @@ class Node(object):
         return self.dist < other.dist
 
 
-
 class WGraph(object):
     def __init__(self):
         self.nodes = {}

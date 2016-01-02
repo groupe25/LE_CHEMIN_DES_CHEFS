@@ -3,11 +3,17 @@ from constantes import *
 import numpy as np
 from random import randint
 from graph import Node, WGraph
+# import networkx as nx
+from graphnx import Graph
 
 
 class Noeud(Node):
-    def __init__(self):
-        super(Node, self).__init__()
+    def __init__(self, l):
+        super(Noeud, self).__init__(id)
+        self.l = l
+
+    def __repr__(self):
+        return "({}, {}, {})".format(self.l[0], self.l[1], self.l[3])
 
 
 class Arbre(WGraph):
@@ -36,6 +42,8 @@ class Jeu(object):
         self.player = first_player
         self.click = 0
         self.pos_depart = Position(0, 0)
+        self.g = Graph()  # implémentation d'un arbre n-aire par un graphe sans doute orienté
+        # pour garder la notion de parentée
 
     def switch_player(self):
         if self.player == 1:
@@ -50,7 +58,7 @@ class Jeu(object):
         self.matrice_jeu[pos_arrivee.x, pos_arrivee.y] = self.matrice_jeu[self.pos_depart.x, self.pos_depart.y]
         self.matrice_jeu[self.pos_depart.x, self.pos_depart.y] = 0
 
-    def capturePions(self, l):
+    def capturePions(self, pos_init, pos_finale, l):
         """
 
         :param l: liste de positions à capturer
@@ -59,6 +67,8 @@ class Jeu(object):
         for pos in l:
             if not self.matrice_jeu[pos.x, pos.y] in (11, 12):
                 self.matrice_jeu[pos.x, pos.y] = 0
+        self.matrice_jeu[pos_init.x, pos_init.y] = 0
+        self.matrice_jeu[pos_finale.x, pos_finale.y] = self.player
 
     def partieTerminee(self):
         return self.matrice[4, 4] in (11, 12)
@@ -90,7 +100,7 @@ class Jeu(object):
         if len(g) == 0: return boule  # cas pas d'adversaires voisins
         for (i, j) in g:
             voisinAdversaire = Position(i, j)
-            boule = self.isPionAdverseVoisinCapturable(pos, voisinAdversaire)
+            boule = self.isPionAdverseVoisinCapturable(pos, voisinAdversaire)[0]
             if boule: break  # il existe au moins une case libre autour de chacun des adversaires : 4 adversaires au max
         return boule
 
@@ -98,7 +108,7 @@ class Jeu(object):
         """
         :param pos: pos pion joueur courant
         :param pos_adv: pos pion adversaire voisin
-        :return:booléen
+        :return:booléen , position finale après prise, position à capturer
         """
         boule = False
         pos_prise = Position(2 * pos_adv.x - pos.x,
@@ -106,7 +116,18 @@ class Jeu(object):
         if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
             if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0:  # pos libre
                 boule = True
-        return boule  # , pos_prise
+        return boule, pos_prise
+
+    def listePosSuiv(self, pos_depart):
+        """
+        :param pos: position départ
+        :return:   renvoie la liste des positions qui capturent un pion à partir de la position pos_depart
+        en utilisant isPionAdverseVoisinCapturable
+        """
+        listePosSuivantes = []
+        for (i, j) in self.listePosAdversesVoisines(pos_depart):
+            listePosSuivantes.append(self.isPionAdverseVoisinCapturable(pos_depart, Position(i, j))[1])
+        return listePosSuivantes
 
     def posVoisinesChef(self, pos):
         """
@@ -167,6 +188,42 @@ class Jeu(object):
             pass
         return l
 
+    def creationArbre(self, pos_dep):
+        """
+        1er essai alimentation récursive de l'arbre self.g
+        utilise un graphe du module networknx
+        peut-être utiliser un graphe orienté pour implémenter cet arbre n-aire
+        :param pos_dep:
+        :return:
+        """
+        s = self.listePosSuiv(pos_dep)
+        if len(s) == 0:
+            exit()  # sortie de la récursion
+        for (m, n) in s:  # pour chaque branche
+            self.g.add_edge((pos_dep.x, pos_dep.y), (m, n))
+            self.creationArbre(Position(m, n))
+
+    def priseMax(self, listePosPionsQuiDoiventCapturer):
+        listePosPriseMax = []
+        listeCapture = []
+        listePosArrivee = []
+
+        l = list(listePosPionsQuiDoiventCapturer)
+
+        for (i, j) in l:  # pour (i, j) fixé
+            s = self.listePosSuiv(Position(i, j))
+            # s= self.listePosAdversesVoisines(Position(i,j))
+            # while len(s)!=0:
+            # for (m, n) in s:
+            #     dd = self.listePosSuiv(Position(m,n))
+            #     g = Graph()
+            #     u = 0
+            #   #  g.add_node(u)
+            #     v = u+1
+            #     g.add_edge(u, v)
+
+        return listePosPriseMax, listeCapture, listePosArrivee
+
     def firstClickValide(self, pos):
         boule = False
         l = []
@@ -175,12 +232,27 @@ class Jeu(object):
                 if (self.player == 1 and self.matrice_jeu[m, n] in (1, 11)) or \
                         (self.player == 2 and self.matrice_jeu[m, n] in (2, 12)):
                     l.append((m, n))  # contient les pos des pions du joueur courant
-        listePosPionsQuiDoiventCapturer = [(i, j) for (i, j) in l if self.matrice_jeu[i, j] not in (11, 12)
-                                           and self.existeCaptureObligatoire(Position(i, j))]
+        # self.listePriseMax contient la liste des pos initiales avant capture
+        self.listePriseMax = [(i, j) for (i, j) in l if self.matrice_jeu[i, j] not in (11, 12)
+                              and self.existeCaptureObligatoire(Position(i, j))]
         if (pos.x, pos.y) not in l:  # click hors pions joueur courant
             boule = False
-        elif len(listePosPionsQuiDoiventCapturer) == 0 or (pos.x, pos.y) in listePosPionsQuiDoiventCapturer:
+        # à partir d'ici l'ensemble des positions  valides est donc ds
+        # la liste l = l'ensemble des pions du joueur courant
+        # elif len(listePosPionsQuiDoiventCapturer) == 0 or (pos.x, pos.y) in listePosPionsQuiDoiventCapturer:
+        elif len(self.listePriseMax) == 0 or (pos.x, pos.y) in self.listePriseMax:
+            # s'il n'existe pas de capture obligatoire les pos valides
+            # sont dans la liste l
             boule = True
+        # on a la liste listePosPionsQuiDoiventCapturer ; pour chaque pos de cette liste on dot déterminer
+        # la ou les pos qui donne lieu à une prise maxi. c'est donc un nouveau filtrage.
+        # on cherche à avoir une listePosPriseMax qui donnera les positions valides pour le 1er click.
+        # or (pos.x, pos.y) in listePosPionsQuiDoiventCapturer: cette condition est insuffisante,
+
+        # on crée une méthode qui prend en argument une liste de positions dont on sait qu'elles captures au moins
+        # un pions et qui retourne la liste listePosPriseMax, la liste des pions à prendre listeCapture
+        #  et la liste des pos finales du pion qui donnera une prise max
+        #  listePosArrivee donc liste des pos valide pour le second click
         return boule
 
     def secondClickValide(self, pos_depart, pos_arrivee):

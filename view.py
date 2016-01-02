@@ -158,11 +158,19 @@ class Window(QMainWindow):
         """
         self.aVousJoueur1.setText("")
         self.aVousJoueur2.setText("")
-        txt = "A vous de jouer Joueur {} !!!!!".format(num_joueur)
+        txt = "A VOUS DE JOUER, JOUEUR {} !!!!!".format(num_joueur)
         if num_joueur == 1:
             self.aVousJoueur1.setText(txt)
         else:
             self.aVousJoueur2.setText(txt)
+
+    def afficheInfo(self, txt):
+        """
+        :param txt: affiche le txt au dessus du plateau
+        :return:
+        """
+        self.aVousJoueur2.setText("")
+        self.aVousJoueur1.setText(txt)
 
     def centrerSurEcran(self):
         qr = self.frameGeometry()
@@ -234,3 +242,6 @@ class Button(QPushButton):
         self.win.draw_pions(self.win.jeu.matrice_jeu)
         print("player courant = ", self.win.jeu.player)
         self.win.affichePlayerCourant(self.win.jeu.player)
+        if self.win.jeu.matrice_jeu[4, 4] in (11, 12):
+            txt = "THE WINNER IS PLAYER " + str(self.win.jeu.matrice_jeu[4, 4] - 10)
+            self.win.afficheInfo(txt)
