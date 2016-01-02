@@ -42,6 +42,7 @@ class Jeu(object):
         self.player = first_player
         self.click = 0
         self.pos_depart = Position(0, 0)
+        self.pos_arrivee = Position(0, 0)
         self.g = Graph()  # implémentation d'un arbre n-aire par un graphe sans doute orienté
         # pour garder la notion de parentée
 
@@ -275,10 +276,10 @@ class Jeu(object):
             self.pos_depart = Position(i, j)
             # self.plusLongueCapture(self.pos_depart)
         elif self.click == 1:  # nb : (i, j) est la position arrivee car second click de l'utilisateur
-            pos_arrivee = Position(i, j)  # affectation ajoutée pour rendre le code plus lisible
+            self.pos_arrivee = Position(i, j)  # affectation ajoutée pour rendre le code plus lisible
             self.click = 0
-            if self.secondClickValide(self.pos_depart, pos_arrivee):
-                self.movePion(self.pos_depart, pos_arrivee)
+            if self.secondClickValide(self.pos_depart, self.pos_arrivee):
+                self.movePion(self.pos_depart, self.pos_arrivee)
                 self.switch_player()
 
     def save_jeu(self, filename):

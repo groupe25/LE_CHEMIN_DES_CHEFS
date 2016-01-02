@@ -8,7 +8,7 @@ BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
 # RESSOURCES = os.curdir + os.sep + "ressources" + os.sep
 
 from constantes import *
-from model import Jeu, load_jeu  # , save_jeu
+from model import Jeu, load_jeu
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, QFileDialog
 from PyQt5.QtGui import QPainter, QPen, QPolygon, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize
@@ -93,12 +93,12 @@ class Window(QMainWindow):
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
         # labels informant qui doit jouer
-        self.aVousJoueur1 = QLabel()
-        self.aVousJoueur2 = QLabel()
-        self.aVousJoueur1.setParent(centralWidget)
-        self.aVousJoueur2.setParent(centralWidget)
-        self.aVousJoueur1.setGeometry(PLATEAUSIZE / 2, MARGE / 3, 200, 20)
-        self.aVousJoueur2.setGeometry(PLATEAUSIZE / 2, TAILLE_FEN - MARGE / 2, 200, 20)
+        self.haut = QLabel()
+        self.haut.setParent(centralWidget)
+        self.haut.setGeometry(PLATEAUSIZE / 2, MARGE / 3, 250, 20)
+        self.bas = QLabel()
+        self.bas.setParent(centralWidget)
+        self.bas.setGeometry(PLATEAUSIZE / 2, TAILLE_FEN - MARGE / 2, 250, 20)
         centralWidget.setParent(self)
         centralWidget.setGeometry(0, 0, TAILLE_FEN, TAILLE_FEN)
         centralWidget.setStyleSheet(BLANC)
@@ -127,7 +127,6 @@ class Window(QMainWindow):
 
     def ouvrirFichier(self, filename):
         try:
-            # filename = QFileDialog.getOpenFileName(self, 'Ouvrir fichier règles', os.startfile(RESSOURCES + filename))[0]
             import webbrowser
             webbrowser.open_new_tab(RESSOURCES + filename)
         except Exception:
@@ -156,21 +155,22 @@ class Window(QMainWindow):
         :param num_joueur: joueur 1 ou 2
         :return:
         """
-        self.aVousJoueur1.setText("")
-        self.aVousJoueur2.setText("")
+        self.haut.setText("")
+        self.bas.setText("")
         txt = "A VOUS DE JOUER, JOUEUR {} !!!!!".format(num_joueur)
         if num_joueur == 1:
-            self.aVousJoueur1.setText(txt)
+            self.haut.setText(txt)
         else:
-            self.aVousJoueur2.setText(txt)
+            self.bas.setText(txt)
 
-    def afficheInfo(self, txt):
+    def afficheInfo(self, txt, width = 250):
         """
         :param txt: affiche le txt au dessus du plateau
         :return:
         """
-        self.aVousJoueur2.setText("")
-        self.aVousJoueur1.setText(txt)
+        self.haut.setGeometry(PLATEAUSIZE / 2, MARGE / 3, width, 20)
+        self.haut.setText(txt)
+        self.bas.setText("")
 
     def centrerSurEcran(self):
         qr = self.frameGeometry()
@@ -236,12 +236,13 @@ class Button(QPushButton):
 
     def mousePressEvent(self, event):
         event.accept()
-        print("souris pressed sur bouton : ", self.i, "  ", self.j)
+        # print("souris pressed sur bouton : ", self.i, "  ", self.j)
         self.win.jeu.jouer(self.i, self.j)
-        print("click ", self.win.jeu.click)
+        # print("click ", self.win.jeu.click)
         self.win.draw_pions(self.win.jeu.matrice_jeu)
-        print("player courant = ", self.win.jeu.player)
+        # print("player courant = ", self.win.jeu.player)
         self.win.affichePlayerCourant(self.win.jeu.player)
         if self.win.jeu.matrice_jeu[4, 4] in (11, 12):
             txt = "THE WINNER IS PLAYER " + str(self.win.jeu.matrice_jeu[4, 4] - 10)
             self.win.afficheInfo(txt)
+
