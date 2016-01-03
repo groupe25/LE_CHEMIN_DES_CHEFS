@@ -2,23 +2,15 @@ __author__ = 'IENAC15 - groupe 25'
 from constantes import *
 import numpy as np
 from random import randint
-from graph import Node, WGraph
-# import networkx as nx
-from graphnx import Graph
+import os
+# import matplotlib.pyplot as plt
 
-
-class Noeud(Node):
-    def __init__(self, l):
-        super(Noeud, self).__init__(id)
-        self.l = l
-
-    def __repr__(self):
-        return "({}, {}, {})".format(self.l[0], self.l[1], self.l[3])
-
-
-class Arbre(WGraph):
-    def __init__(self):
-        super(Arbre, self).__init__()
+try:
+    import networkx as nx
+    from networkx import DiGraph
+except ImportError:
+    print("module networkx non installé pour python 3.")
+    print("Pour l'installer 'pip3 install networkx' ou 'python3 -m install pip networkx' ")
 
 
 class Position:
@@ -50,8 +42,8 @@ class Jeu(object):
         self.info = ""
         self.pos_depart = Position(0, 0)
         self.pos_arrivee = Position(0, 0)
-        self.g = Graph()  # implémentation d'un arbre n-aire par un graphe sans doute orienté
-        # pour garder la notion de parentée
+        self.g = DiGraph()  # implémentation d'un arbre n-aire
+        self.dico_posCapture = {} # la pos capturante associée à la pos capturée
 
     def switch_player(self):
         if self.player == 1:
@@ -59,11 +51,23 @@ class Jeu(object):
         elif self.player == 2:
             self.player = 1
 
+    def posVoisinesChef(self, pos):
+        """
+        :param pos: position chef
+        :return: retourne une liste avec les positions
+        voisines qui doivent être sur le chemin des chef
+        """
+        l = []
+        long_chemin = len(CHEMIN)
+        i = CHEMIN.index((pos.x, pos.y))
+        if i - 1 >= 0: l.append(CHEMIN[i - 1])
+        if i + 1 <= long_chemin - 1: l.append(CHEMIN[i + 1])
+        return l
+
     def posLibre(self, pos):
         return self.matrice_jeu[pos.x, pos.y] == 0
 
-
-    def Play(self, pos_init, pos_finale, l = []):
+    def Play(self, pos_init, pos_finale, l=[]):
         """
         :param l: liste de positions à capturer
         :return:
@@ -96,6 +100,8 @@ class Jeu(object):
         # print("pos voisines avec pions adverse :", g)
         return g
 
+
+
     def existeCaptureObligatoire(self, pos):
         """
         détermine si le pion adverse peut, donc doit, être pris i.e. il existe une case vide voisine du pion adverse
@@ -108,9 +114,13 @@ class Jeu(object):
         if len(g) == 0: return boule  # cas pas d'adversaires voisins
         for (i, j) in g:
             voisinAdversaire = Position(i, j)
-            boule = self.isPionAdverseVoisinCapturable(pos, voisinAdversaire)[0]
-            if boule: break  # il existe au moins une case libre autour de chacun des adversaires : 4 adversaires au max
-        return boule
+            l = list(self.isPionAdverseVoisinCapturable(pos, voisinAdversaire))
+            boule = l[0]
+            self.dico_posCapture[(l[1].x, l[1].y)] \
+               = (l[2].x, l[2].y) # lien via dico entre la pos init et
+            # la pos du pîon à capturer
+            if boule:break  # il existe au moins une case libre autour de chacun des adversaires : 4 adversaires au max
+        return boule  # boule2 pour éviter que boule ne revienne à False
 
     def isPionAdverseVoisinCapturable(self, pos, pos_adv):
         """
@@ -124,68 +134,32 @@ class Jeu(object):
         if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
             if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0:  # pos libre
                 boule = True
-        return boule, pos_prise
+        return boule, pos_prise, pos_adv
 
     def listePosSuiv(self, pos_depart):
         """
-        :param pos: position départ
-        :return:   renvoie la liste des positions qui capturent un pion à partir de la position pos_depart
-        en utilisant isPionAdverseVoisinCapturable
+        :param pos: position départ ou initiale à partir de laquelle il y aura capture de pions adverse.
+        :return:   renvoie la liste des positions "n+2" qui capturent un pion à partir de la position pos_depart
         """
         listePosSuivantes = []
         for (i, j) in self.listePosAdversesVoisines(pos_depart):
-            listePosSuivantes.append(self.isPionAdverseVoisinCapturable(pos_depart, Position(i, j))[1])
+            pos_prise = self.isPionAdverseVoisinCapturable(pos_depart, Position(i, j))[1]
+            listePosSuivantes.append((pos_prise.x,pos_prise.y))
         return listePosSuivantes
 
-    def posVoisinesChef(self, pos):
-        """
-        :param pos: position chef
-        :return: retourne une liste avec les positions
-        voisines qui doivent être sur le chemin des chef
-        """
-        l = []
-        long_chemin = len(CHEMIN)
-        i = CHEMIN.index((pos.x, pos.y))
-        if i - 1 >= 0: l.append(CHEMIN[i - 1])
-        if i + 1 <= long_chemin - 1: l.append(CHEMIN[i + 1])
-        return l
 
-    def plusLongueCapture(self, pos):
-        """
-        on cherche à retourner une liste avec les pos finales
-        maximisant le nombre de captures ( liste qui aura un cardinale de 0 à 4 ; 0 pas de capture, 4 : quatre
-         capture de même longeur et retourne
-        aussi les positions des pions capturés pour pouvoir les supprimer
-        :param pos: position de départ avant le début des captures
-        :return: 1 - liste [] pos finales valide 2 - dico {pos_finales : [liste pions à capturer]}
-        détails :
-        1 - une liste [] avec les pos_finales valides  (à utiliser pour gérer la validités des choix du joeur)
-        2 - une liste  de dictionnaires [{clé = pos_finale valide : valeur liste[] avec les pos des pions à prendre}]
-        les positions finales sont celles qui capturent le meme nombre max de pions et
-        parmi lesquelles le joueur est obligé de choisir. On utilise la clé pos_valides choisie par le joeur
-        pour récupérer la liste des pions adverses à capturer
-        """
-        l = self.posVoisinesPion(pos)
-        g = []
-        for (i, j) in l:
 
-            if (self.player == 1 and self.matrice_jeu[i, j] == 2) or \
-                    (self.player == 2 and self.matrice_jeu[i, j] == 1):
-                g.append((i, j))
-                self.plusLongueCapture(Position(i, j));
-                print("appel de plusLongueCapture")
-        print("pos voisines avec pions adverse :", g)
-        return g
+
 
     def posVoisinesPion(self, pos):
         """
-        # retourne les positions voisines de la pos du 1er click
+        # retourne les positions voisines de la position choisie par le joueur lors de son 1er click
         # on en profite pour empêcher la pos centrale (4,4) interdite aux pions soldats
         :param pos: position du pion avant déplacement
-        :return:
+        :return: renvoie une liste de tuples
         """
         l = []
-        # on ajoute à la "list" l les vosins horizontaux et verticaux
+        # on ajoute à la "list" l les voisins horizontaux et verticaux
         if pos.x - 1 >= 0: l.append((pos.x - 1, pos.y))
         if pos.y - 1 >= 0: l.append((pos.x, pos.y - 1))
         if pos.x + 1 <= 8: l.append((pos.x + 1, pos.y))
@@ -196,43 +170,68 @@ class Jeu(object):
             pass
         return l
 
+
+
     def creationArbre(self, pos_dep):
         """
         1er essai alimentation récursive de l'arbre self.g
         utilise un graphe du module networknx
-        peut-être utiliser un graphe orienté pour implémenter cet arbre n-aire
+        reprendre l'arbre créé avec les positions initales self.g
+        de niveau 1, la racine symbolise le joueur ou le tour de jeu.
+        pour chaque noeud niveau 1, on nos pos_dep
+        comment récupérer les id de ces noeuds
         :param pos_dep:
         :return:
         """
-        s = self.listePosSuiv(pos_dep)
-        if len(s) == 0:
-            exit()  # sortie de la récursion
+        s = self.listePosSuiv(pos_dep) # liste des pos "n+2
+        print("listepos suiv ", s)
+        print(len(s))
+        if len(s) == 0: return
+        # if not self.existeCaptureObligatoire(pos_dep): return
         for (m, n) in s:  # pour chaque branche
+            print("mn = ",self.existeCaptureObligatoire(pos_dep))
+            if not self.existeCaptureObligatoire(pos_dep): break
+            bck_mat = self.matrice_jeu.copy()
+            print("mat", bck_mat)
+            print("self.dico_posCapture[(m,n)] ",self.dico_posCapture[(m,n)])
             self.g.add_edge((pos_dep.x, pos_dep.y), (m, n))
+            print("edge ", pos_dep.x,pos_dep.y, m, n)
+            print("dico", self.dico_posCapture)
+            (a,b)= self.dico_posCapture[(m,n)]
+            self.matrice_jeu[a,b]= 0
+            print(" recursion creation arbre")
             self.creationArbre(Position(m, n))
+            nx.write_dot(self.g, 'toto.dot')
+            os.system('dot -Tpng toto.dot -o toto.png')
+            self.matrice_jeu = bck_mat.copy()
+            #     break
 
-    def priseMax(self, listePosPionsQuiDoiventCapturer):
-        listePosPriseMax = []
-        listeCapture = []
-        listePosArrivee = []
 
-        l = list(listePosPionsQuiDoiventCapturer)
 
-        for (i, j) in l:  # pour (i, j) fixé
-            s = self.listePosSuiv(Position(i, j))
-            # s= self.listePosAdversesVoisines(Position(i,j))
-            # while len(s)!=0:
-            # for (m, n) in s:
-            #     dd = self.listePosSuiv(Position(m,n))
-            #     g = Graph()
-            #     u = 0
-            #   #  g.add_node(u)
-            #     v = u+1
-            #     g.add_edge(u, v)
 
-        return listePosPriseMax, listeCapture, listePosArrivee
 
     def firstClickValide(self, pos):
+
+        ###############################################################################################
+        self.g.clear()
+        listeOfEdges = []
+        for i in range(N):
+            for j in range(N):
+                if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(Position(i,j)):
+                    listeOfEdges.append(((-1, -1), (i, j)))
+        self.g.add_edges_from(listeOfEdges) # crée les aretes et les noeuds associés
+        # print(self.g.nodes())
+        listePosDepart = [(i,j) for (i,j) in self.g if (i,j)!= (-1,-1) ]
+        # print("list pos dep dans firstclic", listePosDepart)
+        for (i,j) in listePosDepart:
+            self.creationArbre(Position(i,j))
+
+
+
+        nx.write_dot(self.g, 'toto.dot')
+        os.system('dot -Tpng toto.dot -o toto.png')
+
+        ###############################################################################################
         boule = False
         l = []
         for m in range(N):
@@ -263,21 +262,11 @@ class Jeu(object):
         #  listePosArrivee donc liste des pos valide pour le second click
         return boule
 
-    def centralPosOk(self, pos_depart, pos_arrivee):
-        boule = True
-        if pos_arrivee == Position(4,4) and self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
-            boule = False
-        print("pos_depart", pos_depart)
-        print("pos_arrivee", pos_arrivee)
-        # print("pos centrale ok", boule)
-        # print("self.matrice_jeu[pos_depart.x, pos_depart.y] = ", self.matrice_jeu[pos_depart.x, pos_depart.y])
-        return boule
-
     def secondClickValide(self, pos_depart, pos_arrivee):
         boule = self.posLibre(pos_arrivee)
-        if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2) :
+        if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
             boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
-           # print("pos voisines de la pos click1: ", self.posVoisinesPion(self.pos_depart))
+            # print("pos voisines de la pos click1: ", self.posVoisinesPion(self.pos_depart))
         # ici on traite le cas du déplacement des chefs
         # nb : les chemins imposés resp. aux chefs sont voisins d'où la nécessité
         # de séparer les deux chemins : utilisation d'un dictionnaire CHEF_PATH de type dict() pour associer
@@ -292,7 +281,6 @@ class Jeu(object):
         if self.click == 0 and self.firstClickValide(pos):  # 1er click du joueur qui a la main
             self.click = 1
             self.pos_depart = Position(i, j)
-            # self.plusLongueCapture(self.pos_depart)
         elif self.click == 1:  # nb : (i, j) est la position arrivee car second click de l'utilisateur
             self.pos_arrivee = Position(i, j)  # affectation ajoutée pour rendre le code plus lisible
             self.click = 0
@@ -304,6 +292,12 @@ class Jeu(object):
         if not self.centralPosOk(self.pos_depart, self.pos_arrivee):
             self.info = "POSITION CENTRALE INTERDITE AUX SOLDATS ! "
 
+    def centralPosOk(self, pos_depart, pos_arrivee):
+        boule = True
+        if pos_arrivee == Position(4, 4) and self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
+            boule = False
+        return boule
+
     def save_jeu(self, filename):
         with open(filename, 'w') as f:
             f.write(str(self.player) + "\n")
@@ -311,6 +305,7 @@ class Jeu(object):
                 for j in range(N):
                     if self.matrice_jeu[i, j] != 0:
                         f.write(str(i) + " " + str(j) + " " + str(self.matrice_jeu[i, j]) + "\n")
+
 
 
 def load_jeu(filename):
@@ -330,7 +325,7 @@ def load_jeu(filename):
     le fichier ne contient pas les valeurs 0 asscociées à l'absence de pion dans une case
     pour ne pas alourdir le fichier.
 
-    :return:
+    :return:matrice du jeu et le numéro de joueur
     """
     matrice_jeu = np.zeros((9, 9), dtype=int)
     with open(filename, 'r') as f:
