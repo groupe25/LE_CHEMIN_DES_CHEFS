@@ -99,6 +99,9 @@ class Window(QMainWindow):
         self.bas = QLabel()
         self.bas.setParent(centralWidget)
         self.bas.setGeometry(PLATEAUSIZE / 2, TAILLE_FEN - MARGE / 2, 250, 20)
+        self.information = QLabel()
+        self.information.setParent(centralWidget)
+        self.information.setGeometry(0, 0, 250, 20)
         centralWidget.setParent(self)
         centralWidget.setGeometry(0, 0, TAILLE_FEN, TAILLE_FEN)
         centralWidget.setStyleSheet(BLANC)
@@ -155,6 +158,7 @@ class Window(QMainWindow):
         :param num_joueur: joueur 1 ou 2
         :return:
         """
+        self.information.setText("")
         self.haut.setText("")
         self.bas.setText("")
         txt = "A VOUS DE JOUER, JOUEUR {} !!!!!".format(num_joueur)
@@ -168,9 +172,10 @@ class Window(QMainWindow):
         :param txt: affiche le txt au dessus du plateau
         :return:
         """
-        self.haut.setGeometry(PLATEAUSIZE / 2, MARGE / 3, width, 20)
-        self.haut.setText(txt)
-        self.bas.setText("")
+        self.information.setGeometry(0,0, width, 20)
+        self.information.setStyleSheet('color: red')
+        self.information.setText(txt)
+
 
     def centrerSurEcran(self):
         qr = self.frameGeometry()
@@ -245,4 +250,6 @@ class Button(QPushButton):
         if self.win.jeu.matrice_jeu[4, 4] in (11, 12):
             txt = "THE WINNER IS PLAYER " + str(self.win.jeu.matrice_jeu[4, 4] - 10)
             self.win.afficheInfo(txt)
+        elif self.win.jeu.info:
+            self.win.afficheInfo(self.win.jeu.info, 2000)
 

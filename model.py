@@ -32,6 +32,12 @@ class Position:
     def __add__(self, other):
         return self.x + other, self.y + other
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __repr__(self):
         return "({}, {})".format(self.x, self.y)
 
@@ -41,6 +47,7 @@ class Jeu(object):
         self.matrice_jeu = matrice_jeu
         self.player = first_player
         self.click = 0
+        self.info = ""
         self.pos_depart = Position(0, 0)
         self.pos_arrivee = Position(0, 0)
         self.g = Graph()  # implémentation d'un arbre n-aire par un graphe sans doute orienté
@@ -55,21 +62,21 @@ class Jeu(object):
     def posLibre(self, pos):
         return self.matrice_jeu[pos.x, pos.y] == 0
 
-    def movePion(self, pos_depart, pos_arrivee):
-        self.matrice_jeu[pos_arrivee.x, pos_arrivee.y] = self.matrice_jeu[self.pos_depart.x, self.pos_depart.y]
-        self.matrice_jeu[self.pos_depart.x, self.pos_depart.y] = 0
 
-    def capturePions(self, pos_init, pos_finale, l):
+    def Play(self, pos_init, pos_finale, l = []):
         """
-
         :param l: liste de positions à capturer
         :return:
         """
-        for pos in l:
-            if not self.matrice_jeu[pos.x, pos.y] in (11, 12):
-                self.matrice_jeu[pos.x, pos.y] = 0
-        self.matrice_jeu[pos_init.x, pos_init.y] = 0
-        self.matrice_jeu[pos_finale.x, pos_finale.y] = self.player
+        if len(l) == 0:
+            self.matrice_jeu[pos_finale.x, pos_finale.y] = self.matrice_jeu[pos_init.x, pos_init.y]
+            self.matrice_jeu[pos_init.x, pos_init.y] = 0
+        else:
+            for pos in l:
+                if not self.matrice_jeu[pos.x, pos.y] in (11, 12):
+                    self.matrice_jeu[pos.x, pos.y] = 0
+            self.matrice_jeu[pos_init.x, pos_init.y] = 0
+            self.matrice_jeu[pos_finale.x, pos_finale.y] = self.player
 
     def partieTerminee(self):
         return self.matrice[4, 4] in (11, 12)
@@ -172,7 +179,7 @@ class Jeu(object):
 
     def posVoisinesPion(self, pos):
         """
-        # retourne les 4 positions voisines possibles au maximum pour les soldats
+        # retourne les positions voisines de la pos du 1er click
         # on en profite pour empêcher la pos centrale (4,4) interdite aux pions soldats
         :param pos: position du pion avant déplacement
         :return:
@@ -256,11 +263,21 @@ class Jeu(object):
         #  listePosArrivee donc liste des pos valide pour le second click
         return boule
 
+    def centralPosOk(self, pos_depart, pos_arrivee):
+        boule = True
+        if pos_arrivee == Position(4,4) and self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
+            boule = False
+        print("pos_depart", pos_depart)
+        print("pos_arrivee", pos_arrivee)
+        # print("pos centrale ok", boule)
+        # print("self.matrice_jeu[pos_depart.x, pos_depart.y] = ", self.matrice_jeu[pos_depart.x, pos_depart.y])
+        return boule
+
     def secondClickValide(self, pos_depart, pos_arrivee):
-        boule = self.posLibre(pos_arrivee) and pos_arrivee != pos_depart
-        if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
+        boule = self.posLibre(pos_arrivee)
+        if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2) :
             boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
-            print("pos voisines pions : ", self.posVoisinesPion(self.pos_depart))
+           # print("pos voisines de la pos click1: ", self.posVoisinesPion(self.pos_depart))
         # ici on traite le cas du déplacement des chefs
         # nb : les chemins imposés resp. aux chefs sont voisins d'où la nécessité
         # de séparer les deux chemins : utilisation d'un dictionnaire CHEF_PATH de type dict() pour associer
@@ -271,6 +288,7 @@ class Jeu(object):
 
     def jouer(self, i, j):
         pos = Position(i, j)
+        self.info = ""
         if self.click == 0 and self.firstClickValide(pos):  # 1er click du joueur qui a la main
             self.click = 1
             self.pos_depart = Position(i, j)
@@ -279,8 +297,12 @@ class Jeu(object):
             self.pos_arrivee = Position(i, j)  # affectation ajoutée pour rendre le code plus lisible
             self.click = 0
             if self.secondClickValide(self.pos_depart, self.pos_arrivee):
-                self.movePion(self.pos_depart, self.pos_arrivee)
+                self.Play(self.pos_depart, self.pos_arrivee)
                 self.switch_player()
+        elif self.centralPosOk(self.pos_depart, self.pos_arrivee):
+            self.info = "CLICK INVALIDE OU REGLE DE LA PRISE MAX OBLIGATOIRE NON RESPECTEE ! "
+        if not self.centralPosOk(self.pos_depart, self.pos_arrivee):
+            self.info = "POSITION CENTRALE INTERDITE AUX SOLDATS ! "
 
     def save_jeu(self, filename):
         with open(filename, 'w') as f:
