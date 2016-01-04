@@ -43,7 +43,7 @@ class Jeu(object):
         self.pos_depart = Position(0, 0)
         self.pos_arrivee = Position(0, 0)
         self.g = DiGraph()  # implémentation d'un arbre n-aire
-        self.dico_posCapture = {} # la pos capturante associée à la pos capturée
+
 
     def switch_player(self):
         if self.player == 1:
@@ -116,9 +116,6 @@ class Jeu(object):
             voisinAdversaire = Position(i, j)
             l = list(self.isPionAdverseVoisinCapturable(pos, voisinAdversaire))
             boule = l[0]
-            self.dico_posCapture[(l[1].x, l[1].y)] \
-               = (l[2].x, l[2].y) # lien via dico entre la pos init et
-            # la pos du pîon à capturer
             if boule:break  # il existe au moins une case libre autour de chacun des adversaires : 4 adversaires au max
         return boule  # boule2 pour éviter que boule ne revienne à False
 
@@ -134,7 +131,7 @@ class Jeu(object):
         if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
             if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0:  # pos libre
                 boule = True
-        return boule, pos_prise, pos_adv
+        return boule, pos_prise
 
     def listePosSuiv(self, pos_depart):
         """
@@ -170,8 +167,11 @@ class Jeu(object):
             pass
         return l
 
+    def capturePion(self,pos_init, pos_finale ):
+        return Position((pos_finale.x + pos_finale.x) / 2,(pos_finale.y + pos_finale.y) / 2)
 
 
+    cpt=0 # BUG DANS CETTE FONCTION RECURSIVE : lien avec la pos (4,4)
     def creationArbre(self, pos_dep):
         """
         1er essai alimentation récursive de l'arbre self.g
@@ -186,25 +186,25 @@ class Jeu(object):
         s = self.listePosSuiv(pos_dep) # liste des pos "n+2
         print("listepos suiv ", s)
         print(len(s))
-        if len(s) == 0: return
+        self.cpt +=1 ; print(self.cpt)
+        if self.cpt > 20: return
+        if len(s) == 0 : return
         # if not self.existeCaptureObligatoire(pos_dep): return
         for (m, n) in s:  # pour chaque branche
             print("mn = ",self.existeCaptureObligatoire(pos_dep))
-            if not self.existeCaptureObligatoire(pos_dep): break
+            # if not self.existeCaptureObligatoire(pos_dep): break
             bck_mat = self.matrice_jeu.copy()
             print("mat", bck_mat)
-            print("self.dico_posCapture[(m,n)] ",self.dico_posCapture[(m,n)])
             self.g.add_edge((pos_dep.x, pos_dep.y), (m, n))
             print("edge ", pos_dep.x,pos_dep.y, m, n)
-            print("dico", self.dico_posCapture)
-            (a,b)= self.dico_posCapture[(m,n)]
-            self.matrice_jeu[a,b]= 0
+            pos_a_capturer = self.capturePion(pos_dep, Position(m,n))
+            self.matrice_jeu[pos_a_capturer.x,pos_a_capturer.y]= 0
             print(" recursion creation arbre")
             self.creationArbre(Position(m, n))
             nx.write_dot(self.g, 'toto.dot')
             os.system('dot -Tpng toto.dot -o toto.png')
-            self.matrice_jeu = bck_mat.copy()
-            #     break
+        self.matrice_jeu = bck_mat.copy()
+
 
 
 
