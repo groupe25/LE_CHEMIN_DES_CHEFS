@@ -64,24 +64,6 @@ class Jeu(object):
         if i + 1 <= long_chemin - 1: l.append(CHEMIN[i + 1])
         return l
 
-    def posLibre(self, pos):
-        return self.matrice_jeu[pos.x, pos.y] == 0
-
-    def Play(self, pos_init, pos_finale, l=[]):
-        """
-        :param l: liste de positions à capturer
-        :return:
-        """
-        if len(l) == 0:
-            self.matrice_jeu[pos_finale.x, pos_finale.y] = self.matrice_jeu[pos_init.x, pos_init.y]
-            self.matrice_jeu[pos_init.x, pos_init.y] = 0
-        else:
-            for pos in l:
-                if not self.matrice_jeu[pos.x, pos.y] in (11, 12):
-                    self.matrice_jeu[pos.x, pos.y] = 0
-            self.matrice_jeu[pos_init.x, pos_init.y] = 0
-            self.matrice_jeu[pos_finale.x, pos_finale.y] = self.player
-
     def partieTerminee(self):
         return self.matrice[4, 4] in (11, 12)
 
@@ -100,54 +82,27 @@ class Jeu(object):
         # print("pos voisines avec pions adverse :", g)
         return g
 
+    #
 
-
-    def existeCaptureObligatoire(self, pos):
-        """
-        détermine si le pion adverse peut, donc doit, être pris i.e. il existe une case vide voisine du pion adverse
-        donc pion prenable
-        :param pos:
-        :return:
-        """
-        boule = False
-        g = self.listePosAdversesVoisines(pos)
-        if len(g) == 0: return boule  # cas pas d'adversaires voisins
-        for (i, j) in g:
-            voisinAdversaire = Position(i, j)
-            l = list(self.isPionAdverseVoisinCapturable(pos, voisinAdversaire))
-            boule = l[0]
-            if boule:break  # il existe au moins une case libre autour de chacun des adversaires : 4 adversaires au max
-        return boule  # boule2 pour éviter que boule ne revienne à False
-
-    def isPionAdverseVoisinCapturable(self, pos, pos_adv):
-        """
-        :param pos: pos pion joueur courant
-        :param pos_adv: pos pion adversaire voisin
-        :return:booléen , position finale après prise, position à capturer
-        """
-        boule = False
-        pos_prise = Position(2 * pos_adv.x - pos.x,
-                             2 * pos_adv.y - pos.y)  # calcul qui renvoie la position de prise "n+2"
-        if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
-            if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0:  # pos libre
-                boule = True
-        return boule, pos_prise
 
     def listePosSuiv(self, pos_depart):
         """
-        :param pos: position départ ou initiale à partir de laquelle il y aura capture de pions adverse.
-        :return:   renvoie la liste des positions "n+2" qui capturent un pion à partir de la position pos_depart
+        :param pos: position départ à partir de laquelle il y aura capture de pions adverses
+        :return:   renvoie la liste des positions "n+2" (4 maxis) qui capturent un pion à partir de la position pos_depart
         """
         listePosSuivantes = []
         for (i, j) in self.listePosAdversesVoisines(pos_depart):
-            pos_prise = self.isPionAdverseVoisinCapturable(pos_depart, Position(i, j))[1]
-            listePosSuivantes.append((pos_prise.x,pos_prise.y))
+            pos_prise = Position(2 * i - pos_depart.x, 2 * j - pos_depart.y)  # calcul qui renvoie la position de prise "n+2"
+            if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
+                if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0:  # pos libre
+                    listePosSuivantes.append((pos_prise.x,pos_prise.y))
         return listePosSuivantes
 
 
 
 
-
+    def existeCaptureObligatoire(self, pos):
+        return len(self.listePosSuiv(pos)) != 0
     def posVoisinesPion(self, pos):
         """
         # retourne les positions voisines de la position choisie par le joueur lors de son 1er click
@@ -166,9 +121,13 @@ class Jeu(object):
         except ValueError:
             pass
         return l
-
     def capturePion(self,pos_init, pos_finale ):
+        """
+        renvoie la pos du pion à capturer, connaissance la pos init et la pos finale du pions captureur
+        C'est une simple moyenne arithmétique
+        """
         return Position((pos_finale.x + pos_finale.x) / 2,(pos_finale.y + pos_finale.y) / 2)
+
 
 
     cpt=0 # BUG DANS CETTE FONCTION RECURSIVE : lien avec la pos (4,4)
@@ -184,31 +143,23 @@ class Jeu(object):
         :return:
         """
         s = self.listePosSuiv(pos_dep) # liste des pos "n+2
-        print("listepos suiv ", s)
-        print(len(s))
         self.cpt +=1 ; print(self.cpt)
-        if self.cpt > 20: return
+        # if self.cpt > 10: return
+        print("dddddd len s ffff", len(s))
         if len(s) == 0 : return
-        # if not self.existeCaptureObligatoire(pos_dep): return
+        print("listepos suiv ", s)
+        rang = 0
         for (m, n) in s:  # pour chaque branche
-            print("mn = ",self.existeCaptureObligatoire(pos_dep))
-            # if not self.existeCaptureObligatoire(pos_dep): break
-            bck_mat = self.matrice_jeu.copy()
-            print("mat", bck_mat)
+            rang +=1
+            if (m,n) in self.g.nodes():break
             self.g.add_edge((pos_dep.x, pos_dep.y), (m, n))
-            print("edge ", pos_dep.x,pos_dep.y, m, n)
+            self.g.node[(m,n)]['rang'] = rang
+            print(self.g.node[(m,n)])
             pos_a_capturer = self.capturePion(pos_dep, Position(m,n))
             self.matrice_jeu[pos_a_capturer.x,pos_a_capturer.y]= 0
-            print(" recursion creation arbre")
             self.creationArbre(Position(m, n))
             nx.write_dot(self.g, 'toto.dot')
             os.system('dot -Tpng toto.dot -o toto.png')
-        self.matrice_jeu = bck_mat.copy()
-
-
-
-
-
 
     def firstClickValide(self, pos):
 
@@ -217,15 +168,17 @@ class Jeu(object):
         listeOfEdges = []
         for i in range(N):
             for j in range(N):
-                if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(Position(i,j)):
+
+                if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(Position(i, j)):
                     listeOfEdges.append(((-1, -1), (i, j)))
         self.g.add_edges_from(listeOfEdges) # crée les aretes et les noeuds associés
         # print(self.g.nodes())
         listePosDepart = [(i,j) for (i,j) in self.g if (i,j)!= (-1,-1) ]
         # print("list pos dep dans firstclic", listePosDepart)
         for (i,j) in listePosDepart:
-            self.creationArbre(Position(i,j))
-
+              self.creationArbre(Position(i,j))
+        print("self.posSuiv wwwwwwwwwww ", self.listePosSuiv(pos))
+        #print("listePosAdversesVoisines(pos)", self.listePosAdversesVoisines( pos))
 
 
         nx.write_dot(self.g, 'toto.dot')
@@ -275,6 +228,7 @@ class Jeu(object):
             boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesChef(self.pos_depart)
         return boule
 
+
     def jouer(self, i, j):
         pos = Position(i, j)
         self.info = ""
@@ -292,7 +246,28 @@ class Jeu(object):
         if not self.centralPosOk(self.pos_depart, self.pos_arrivee):
             self.info = "POSITION CENTRALE INTERDITE AUX SOLDATS ! "
 
+    def posLibre(self, pos):
+        return self.matrice_jeu[pos.x, pos.y] == 0
+    def Play(self, pos_init, pos_finale, l=[]):
+        """
+        :param l: liste de positions à capturer
+        :return:
+        """
+        if len(l) == 0:
+            self.matrice_jeu[pos_finale.x, pos_finale.y] = self.matrice_jeu[pos_init.x, pos_init.y]
+            self.matrice_jeu[pos_init.x, pos_init.y] = 0
+        else:
+            for pos in l:
+                if not self.matrice_jeu[pos.x, pos.y] in (11, 12):
+                    self.matrice_jeu[pos.x, pos.y] = 0
+            self.matrice_jeu[pos_init.x, pos_init.y] = 0
+            self.matrice_jeu[pos_finale.x, pos_finale.y] = self.player
     def centralPosOk(self, pos_depart, pos_arrivee):
+        """
+        :param pos_depart: position 1er click
+        :param pos_arrivee: position 2nd click
+        :return: renvoie False si le joueur veut déplacer un soldat en position centrale (4,4)
+        """
         boule = True
         if pos_arrivee == Position(4, 4) and self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
             boule = False
@@ -335,3 +310,130 @@ def load_jeu(filename):
             w = line.strip().split()
             matrice_jeu[int(w[0]), int(w[1])] = int(w[2])
     return matrice_jeu, player
+
+
+
+
+
+
+    # def existeCaptureObligatoire(self, pos):
+    #     """
+    #     détermine si le pion adverse peut, donc doit, être pris i.e. il existe une case vide voisine du pion adverse
+    #     donc pion prenable
+    #     :param pos:
+    #     :return:
+    #     """
+    #     boule = False
+    #     g = self.listePosAdversesVoisines(pos)
+    #     if len(g) == 0: return boule  # cas pas d'adversaires voisins
+    #     for (i, j) in g:
+    #         voisinAdversaire = Position(i, j)
+    #         l = list(self.isPionAdverseVoisinCapturable(pos, voisinAdversaire))
+    #         boule = l[0]
+    #         if boule:break  # il existe au moins une case libre autour de chacun des adversaires : 4 adversaires au max
+    #     return boule  # boule2 pour éviter que boule ne revienne à False
+
+    #
+    # def isPionAdverseVoisinCapturable(self, pos, pos_adv):
+    #     """
+    #     :param pos: pos pion joueur courant
+    #     :param pos_adv: pos pion adversaire voisin
+    #     :return:booléen , position finale après prise, position à capturer
+    #     """
+    #     boule = False
+    #     pos_prise = Position(2 * pos_adv.x - pos.x,
+    #                          2 * pos_adv.y - pos.y)  # calcul qui renvoie la position de prise "n+2"
+    #     if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
+    #         if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0:  # pos libre
+    #             boule = True
+    #     return boule, pos_prise
+    #
+
+
+
+
+    # cpt=0 # BUG DANS CETTE FONCTION RECURSIVE : lien avec la pos (4,4)
+    # def creationArbre(self, pos_dep):
+    #     """
+    #     1er essai alimentation récursive de l'arbre self.g
+    #     utilise un graphe du module networknx
+    #     reprendre l'arbre créé avec les positions initales self.g
+    #     de niveau 1, la racine symbolise le joueur ou le tour de jeu.
+    #     pour chaque noeud niveau 1, on nos pos_dep
+    #     comment récupérer les id de ces noeuds
+    #     :param pos_dep:
+    #     :return:
+    #     """
+    #     s = self.listePosSuiv(pos_dep) # liste des pos "n+2
+    #     print("listepos suiv ", s)
+    #     print(len(s))
+    #     self.cpt +=1 ; print(self.cpt)
+    #     if self.cpt > 20: return
+    #     if len(s) == 0 : return
+    #     # if not self.existeCaptureObligatoire(pos_dep): return
+    #     for (m, n) in s:  # pour chaque branche
+    #         print("mn = ",self.existeCaptureObligatoire(pos_dep))
+    #         # if not self.existeCaptureObligatoire(pos_dep): break
+    #         bck_mat = self.matrice_jeu.copy()
+    #         print("mat", bck_mat)
+    #         self.g.add_edge((pos_dep.x, pos_dep.y), (m, n))
+    #         print("edge ", pos_dep.x,pos_dep.y, m, n)
+    #         pos_a_capturer = self.capturePion(pos_dep, Position(m,n))
+    #         self.matrice_jeu[pos_a_capturer.x,pos_a_capturer.y]= 0
+    #         print(" recursion creation arbre")
+    #         self.creationArbre(Position(m, n))
+    #         nx.write_dot(self.g, 'toto.dot')
+    #         os.system('dot -Tpng toto.dot -o toto.png')
+    #     self.matrice_jeu = bck_mat.copy()
+
+
+
+    #
+    # cpt=0 # BUG DANS CETTE FONCTION RECURSIVE : lien avec la pos (4,4)
+    # def creationArbre(self, pos_dep):
+    #     """
+    #     1er essai alimentation récursive de l'arbre self.g
+    #     utilise un graphe du module networknx
+    #     reprendre l'arbre créé avec les positions initales self.g
+    #     de niveau 1, la racine symbolise le joueur ou le tour de jeu.
+    #     pour chaque noeud niveau 1, on nos pos_dep
+    #     comment récupérer les id de ces noeuds
+    #     :param pos_dep:
+    #     :return:
+    #     """
+    #     s = self.listePosSuiv(pos_dep) # liste des pos "n+2
+    #     print("listepos suiv ", s)
+    #     print(len(s))
+    #     self.cpt +=1 ; print(self.cpt)
+    #     # if self.cpt > 10: return
+    #     print("listePosSuiv :",s)
+    #     if len(s) == 0 : return
+    #
+    #     for (m, n) in s:  # pour chaque branche
+    #         bck_mat = self.matrice_jeu.copy()
+    #         print("mat", bck_mat)
+    #         self.g.add_edge((pos_dep.x, pos_dep.y), (m, n))
+    #         print("edge ", pos_dep.x,pos_dep.y, m, n)
+    #         pos_a_capturer = self.capturePion(pos_dep, Position(m,n))
+    #         self.matrice_jeu[pos_a_capturer.x,pos_a_capturer.y]= 0
+    #         print(" recursion creation arbre")
+    #         self.creationArbre(Position(m, n))
+    #         nx.write_dot(self.g, 'toto.dot')
+    #         os.system('dot -Tpng toto.dot -o toto.png')
+    #         self.matrice_jeu = bck_mat.copy()
+
+
+    # def auSuivant(self, pos_dep, pos_arr):
+    #
+    #     s1 = set(self.listePosSuiv(pos_dep))
+    #     s2 = set(self.listePosSuiv(pos_arr))
+    #     return list()
+    #
+    #     lsd = []
+    #     lsd = [(i,j) in l2 if (i,j) not in l1]
+    #     for (i, j) in self.listePosAdversesVoisines(pos_dep):
+    #         pos_prise = Position(2 * i - pos_dep.x, 2 * j - pos_dep.y)  # calcul qui renvoie la position de prise "n+2"
+    #         if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
+    #             if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0:  # pos libre
+    #                 lsd.append((pos_prise.x,pos_prise.y))
+    #     return lsd
