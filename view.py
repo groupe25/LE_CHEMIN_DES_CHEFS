@@ -1,11 +1,12 @@
-__author__ = 'IENAC15 - groupe 25'  # ! /usr/bin/python3
+__author__ = 'IENAC15 - groupe 25'
+# ! /usr/bin/python3
 # -*-coding: utf-8 -*-
 import os
-import time
+
 
 RESSOURCES = os.getcwd() + os.sep + "ressources" + os.sep
 BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
-# RESSOURCES = os.curdir + os.sep + "ressources" + os.sep
+
 
 from constantes import *
 from model import Jeu, load_jeu
@@ -35,11 +36,11 @@ class Window(QMainWindow):
         winSize = min(QDesktopWidget().height(), QDesktopWidget().width())  # dim fenetre vs écran
         self.resize(RATIO * winSize, RATIO * winSize)
         self.setWindowIcon(QIcon(RESSOURCES + "logo_enac.png"))
-        # self.setFixedSize(RATIO * winSize, RATIO * winSize)  # pour avoir une fenêtre de taille fixée
         self.centrerSurEcran()
         self.initMenu()
         self.jeu = Jeu(first_player, matrice_jeu)
         self.affichePlayerCourant(self.jeu.player)
+      # self.setFixedSize(RATIO * winSize, RATIO * winSize)  # pour avoir une fenêtre de taille fixée
 
     def initMenu(self):
         self.setWindowTitle('Le chemin des chefs - IENAC 15 - Groupe 25')
