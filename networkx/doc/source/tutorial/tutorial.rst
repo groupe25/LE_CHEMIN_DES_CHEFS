@@ -111,23 +111,19 @@ At this stage the graph G consists of 8 nodes and 2 edges, as can be seen by:
 >>> G.number_of_edges()
 2
 
-We can examine the nodes and edges. The methods return iterators of nodes, 
-edges, neighbors, etc. This is typically more memory efficient, but it does
-mean we need to specify what type of container to put the objects in. Here
-we use lists, though sets, dicts, tuples and other containers may be better
-in other contexts.
+We can examine them with
 
->>> list(G.nodes())
+>>> G.nodes()
 ['a', 1, 2, 3, 'spam', 'm', 'p', 's']
->>> list(G.edges())
+>>> G.edges()
 [(1, 2), (1, 3)]
->>> list(G.neighbors(1))
+>>> G.neighbors(1)
 [2, 3]
 
 Removing nodes or edges has similar syntax to adding:
 
 >>> G.remove_nodes_from("spam")
->>> list(G.nodes())
+>>> G.nodes()
 [1, 2, 3, 'spam']
 >>> G.remove_edge(1,3)
 
@@ -135,7 +131,7 @@ When creating a graph structure by instantiating one of the graph
 classes you can specify data in several formats.  
 
 >>> H=nx.DiGraph(G)   # create a DiGraph using the connections from G
->>> list(H.edges())
+>>> H.edges()
 [(1, 2), (2, 1)]
 >>> edgelist=[(0,1),(1,2),(2,3)]
 >>> H=nx.Graph(edgelist) 
@@ -165,7 +161,11 @@ In addition to the methods
 :meth:`Graph.nodes`, 
 :meth:`Graph.edges`, and 
 :meth:`Graph.neighbors`,
-fast direct access to the graph data structure is also possible
+iterator versions (e.g. :meth:`Graph.edges_iter`) can save you from
+creating large lists when you are just going to iterate 
+through them anyway.
+
+Fast direct access to the graph data structure is also possible
 using subscript notation.
 
 .. Warning::
@@ -189,7 +189,7 @@ Note that for undirected graphs this actually looks at each edge twice.
 
 >>> FG=nx.Graph()
 >>> FG.add_weighted_edges_from([(1,2,0.125),(1,3,0.75),(2,4,1.2),(3,4,0.375)])
->>> for n,nbrs in FG.adjacency():
+>>> for n,nbrs in FG.adjacency_iter():
 ...    for nbr,eattr in nbrs.items():
 ...        data=eattr['weight']
 ...        if data<0.5: print('(%d, %d, %.3f)' % (n,nbr,data))
@@ -243,7 +243,7 @@ Add node attributes using add_node(), add_nodes_from() or G.node
 >>> G.node[1]
 {'time': '5pm'}
 >>> G.node[1]['room'] = 714
->>> list(G.nodes(data=True))
+>>> G.nodes(data=True)
 [(1, {'room': 714, 'time': '5pm'}), (3, {'time': '2pm'})]
 
 Note that adding a node to G.node does not add it to the graph,
@@ -315,7 +315,7 @@ well defined.
 
 >>> MG=nx.MultiGraph()
 >>> MG.add_weighted_edges_from([(1,2,.5), (1,2,.75), (2,3,.5)])
->>> dict(MG.degree(weight='weight'))
+>>> MG.degree(weight='weight')
 {1: 1.25, 2: 1.75, 3: 0.5}
 >>> GG=nx.Graph()
 >>> for n,nbrs in MG.adjacency_iter():
@@ -391,16 +391,15 @@ functions such as:
 >>> nx.connected_components(G)
 [[1, 2, 3], ['spam']]
 
->>> sorted(d for n, d in G.degree())
+>>> sorted(nx.degree(G).values())
 [0, 1, 1, 2]
 
 >>> nx.clustering(G)
 {1: 0.0, 2: 0.0, 3: 0.0, 'spam': 0.0}
 
-Functions that return node properties return iterators over node, value
-2-tuples. These are easily stored in a dict structure if you desire.
+Functions that return node properties return dictionaries keyed by node label.
 
->>> dict(nx.degree(G))
+>>> nx.degree(G)
 {1: 2, 2: 1, 3: 1, 'spam': 0}
 
 For values of specific nodes, you can provide a single node or an nbunch 
@@ -412,11 +411,11 @@ return a dictionary.
 2
 >>> G.degree(1)
 2
->>> dict(G.degree([1,2]))
+>>> G.degree([1,2])
 {1: 2, 2: 1}
->>> sorted(d for n, d in G.degree([1,2]))
+>>> sorted(G.degree([1,2]).values())
 [1, 2]
->>> sorted(d for n, d in G.degree())
+>>> sorted(G.degree().values())
 [0, 1, 1, 2]
 
 

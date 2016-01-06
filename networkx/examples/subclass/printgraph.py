@@ -2,7 +2,7 @@
 Example subclass of the Graph class.
 """
 __author__ = """Aric Hagberg (hagberg@lanl.gov)"""
-#    Copyright (C) 2004-2016 by
+#    Copyright (C) 2004-2015 by 
 #    Aric Hagberg <hagberg@lanl.gov>
 #    Dan Schult <dschult@colgate.edu>
 #    Pieter Swart <swart@lanl.gov>
@@ -117,12 +117,12 @@ if __name__=='__main__':
     G.remove_nodes_from('ar')
     print(G.nodes(data=True))
     G.add_edge(0,1,weight=10)
-    print(list(G.edges(data=True)))
+    print(G.edges(data=True))
     G.remove_edge(0,1)
     G.add_edges_from(list(zip(list(range(0o3)),list(range(1,4)))),weight=10)
-    print(list(G.edges(data=True)))
+    print(G.edges(data=True))
     G.remove_edges_from(list(zip(list(range(0o3)),list(range(1,4)))))
-    print(list(G.edges(data=True)))
+    print(G.edges(data=True))
 
     
     G=PrintGraph()
@@ -130,6 +130,6 @@ if __name__=='__main__':
     print("subgraph")
     H1=G.subgraph(list(range(4)),copy=False)
     H2=G.subgraph(list(range(4)),copy=False)
-    print(list(H1.edges()))
-    print(list(H2.edges()))
+    print(H1.edges())
+    print(H2.edges())
                  

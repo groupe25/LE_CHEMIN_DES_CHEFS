@@ -4,16 +4,21 @@
 Release Log
 ===========
 
-NetworkX 2.0
-------------
-Release date: TBD
+NetworkX 1.11
+-------------
+Release date: * November 2015
 
-.. toctree::
+Support for Python 3.5 added, drop support for Python 3.2.
 
-   migration_guide_from_1.x_to_2.0
+Highlights
+~~~~~~~~~~
+Fixes installation on some machines and test with appveyor, 
+Restores default center and scale of layout routines,
+Fixes various docs including no symbolic links in examples.
+Docs can now build using autosummary on readthedocs.org.
 
 NetworkX 1.10
---------------
+-------------
 Release date: 2 August 2015
 
 Support for Python 2.6 is dropped in this release.
@@ -56,8 +61,6 @@ NetworkX 1.9.1
 Release date: 13 September 2014
 
 Bugfix release for minor installation and documentation issues.
-
-https://github.com/networkx/networkx/milestones/networkx-1.9.1
 
 NetworkX 1.9
 ------------

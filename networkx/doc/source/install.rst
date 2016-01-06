@@ -2,9 +2,16 @@
 Installing
 **********
 
-Installing with pip
-===================
-Try to install it with
+Before installing NetworkX, you need to have
+`setuptools <https://pypi.python.org/pypi/setuptools>`_ installed.
+
+Quick install
+=============
+
+Get NetworkX from the Python Package Index at
+http://pypi.python.org/pypi/networkx
+
+or install it with
 
 ::
 
@@ -12,10 +19,6 @@ Try to install it with
 
 and an attempt will be made to find and install an appropriate version
 that matches your operating system and Python version.
-
-You can also get NetworkX from the Python Package Index manually
-at http://pypi.python.org/pypi/networkx
-To use pip, you need to have `setuptools <https://pypi.python.org/pypi/setuptools>`_ installed.
 
 You can install the development version (at github.com) with
 
@@ -25,30 +28,12 @@ You can install the development version (at github.com) with
 
 More download file options are at http://networkx.github.io/download.html.
 
-
-Installing with conda
-=====================
-
-If you are using Ananconda/Miniconda distribution of Python then you can
-update/install NetworkX to the latest version with
-
-::
-
-    conda install networkx
-
-or to update an existing installation
-
-::
-
-    conda update networkx
-
-
 Installing from source
 ======================
 
 You can install from source by downloading a source archive file
 (tar.gz or zip) or by checking out the source files from the
-Git source code repository.
+Mercurial source code repository.
 
 NetworkX is a pure Python package; you don't need a compiler to build
 or install it.
@@ -121,7 +106,7 @@ Requirements
 Python
 ------
 
-To use NetworkX you need Python 2.7, 3.3 or later.
+To use NetworkX you need Python 2.7, 3.2 or later.
 
 The easiest way to get Python and most optional packages is to install
 the Enthought Python distribution "`Canopy <https://www.enthought.com/products/canopy/>`_".

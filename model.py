@@ -11,7 +11,8 @@ except ImportError:
     print("module networkx non installé pour python 3.")
     print("Pour l'installer si vous avez les droits root faire \
     'pip3 install networkx' ou 'python3 -m install pip networkx' ")
-    print("Pour une installation sans droit root : télécharger networx, le copier dans le répertoire du projet,"
+    print("Pour une installation sans droit root : télécharger networx (version 1.1) ")
+    print("car pb avec la 2, le copier dans le répertoire du projet,"
           "se placer dans le dossier de networkx ett taper : python3 setup.py install --user")
     print("En cas de problème avec pydot commenter les lignes")
     print(" nx.write_dot(self.g, 'toto.dot")
@@ -202,90 +203,88 @@ class Jeu(object):
                     if (self.player == 1 and self.matrice_jeu[m, n] in (1, 11)) or \
                             (self.player == 2 and self.matrice_jeu[m, n] in (2, 12)):
                         l.append((m, n))  # contient les pos des pions du joueur courant, chefs compris
+            if (pos.x, pos.y) in l: boule = True  # 1er click OK car sur pion du joueur courant
 
-            if (pos.x, pos.y) in l: boule = True  # click hors pions joueur courant
-        else :
+        ##################################"""
+        # else :
         # il existe des captures obligatoires. Les seules positions légales sont les pions
         # du joueur courant qui donneront lieu à la ou les prises max.
         # calcul effectué grace à l'arbre de captures construit précédemment et à nivMax.
 
-            self.listePriseMax = [(i, j) for (i, j) in l if self.matrice_jeu[i, j] not in (11, 12)
-                                  and self.existeCaptureObligatoire(Position(i, j))]
-
-            elif len(self.listePriseMax) == 0 or (pos.x,pos.y) in self.listePriseMax:  # s'il n'existe pas de capture obligatoire les pos valides
-            # sont dans la liste l
-            boule = True
-
+            # self.listePriseMax = [(i, j) for (i, j) in l if self.matrice_jeu[i, j] not in (11, 12)
+            #                       and self.existeCaptureObligatoire(Position(i, j))]
+            #
+            # elif len(self.listePriseMax) == 0 or (pos.x,pos.y) in self.listePriseMax:  # s'il n'existe pas de capture obligatoire les pos valides
+            # # sont dans la liste l
+            # boule = True
+        ##################################################"
+        print(self.priseMax(self.g))
         return boule
 
+    def priseMax(self, g):
+        l=[]
+        for n, nbrsdict in g.adjacency_iter():
+            for nbr, eattr in nbrsdict.items():
+                if 'niveau' in eattr:
+                    print((n,nbr))
+        return l
 
-def secondClickValide(self, pos_depart, pos_arrivee):
-    boule = self.posLibre(pos_arrivee)
-    if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
-        boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
-    else:  # cas où les pions sont des chefs  self.matrice_jeu[pos_depart.x, pos_depart.y] in (11, 12):
-        boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesChef(self.pos_depart)
-    return boule
-
-
-def jouer(self, i, j):
-    pos = Position(i, j)
-    self.info = ""
-    if self.click == 0 and self.firstClickValide(pos):  # 1er click du joueur qui a la main
-        self.click = 1
-        self.pos_depart = Position(i, j)
-    elif self.click == 1:  # nb : (i, j) est la position arrivee car second click de l'utilisateur
-        self.pos_arrivee = Position(i, j)  # affectation ajoutée pour rendre le code plus lisible
-        self.click = 0
-        if self.secondClickValide(self.pos_depart, self.pos_arrivee):
-            self.Play(self.pos_depart, self.pos_arrivee)
-            self.switch_player()
-    elif self.centralPosOk(self.pos_depart, self.pos_arrivee):
-        self.info = "CLICK INVALIDE OU REGLE DE LA PRISE MAX OBLIGATOIRE NON RESPECTEE ! "
-    if not self.centralPosOk(self.pos_depart, self.pos_arrivee):
-        self.info = "POSITION CENTRALE INTERDITE AUX SOLDATS ! "
-
-
-def posLibre(self, pos):
-    return self.matrice_jeu[pos.x, pos.y] == 0
-
-
-def Play(self, pos_init, pos_finale, l=[]):
-    """
-    :param l: liste de positions à capturer
-    :return:
-    """
-    if len(l) == 0:
-        self.matrice_jeu[pos_finale.x, pos_finale.y] = self.matrice_jeu[pos_init.x, pos_init.y]
-        self.matrice_jeu[pos_init.x, pos_init.y] = 0
-    else:
-        for pos in l:
-            if not self.matrice_jeu[pos.x, pos.y] in (11, 12):
-                self.matrice_jeu[pos.x, pos.y] = 0
-        self.matrice_jeu[pos_init.x, pos_init.y] = 0
-        self.matrice_jeu[pos_finale.x, pos_finale.y] = self.player
-
-
-def centralPosOk(self, pos_depart, pos_arrivee):
-    """
-    :param pos_depart: position 1er click
-    :param pos_arrivee: position 2nd click
-    :return: renvoie False si le joueur veut déplacer un soldat en position centrale (4,4)
-    """
-    boule = True
-    if pos_arrivee == Position(4, 4) and self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
-        boule = False
-    return boule
-
-
-def save_jeu(self, filename):
-    with open(filename, 'w') as f:
-        f.write(str(self.player) + "\n")
-        for i in range(N):
-            for j in range(N):
-                if self.matrice_jeu[i, j] != 0:
-                    f.write(str(i) + " " + str(j) + " " + str(self.matrice_jeu[i, j]) + "\n")
-
+    def secondClickValide(self, pos_depart, pos_arrivee):
+        boule = self.posLibre(pos_arrivee)
+        if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
+            boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
+        else:  # cas où les pions sont des chefs  self.matrice_jeu[pos_depart.x, pos_depart.y] in (11, 12):
+            boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesChef(self.pos_depart)
+        return boule
+    def jouer(self, i, j):
+        pos = Position(i, j)
+        self.info = ""
+        if self.click == 0 and self.firstClickValide(pos):  # 1er click du joueur qui a la main
+            self.click = 1
+            self.pos_depart = Position(i, j)
+        elif self.click == 1:  # nb : (i, j) est la position arrivee car second click de l'utilisateur
+            self.pos_arrivee = Position(i, j)  # affectation ajoutée pour rendre le code plus lisible
+            self.click = 0
+            if self.secondClickValide(self.pos_depart, self.pos_arrivee):
+                self.Play(self.pos_depart, self.pos_arrivee)
+                self.switch_player()
+        elif self.centralPosOk(self.pos_depart, self.pos_arrivee):
+            self.info = "CLICK INVALIDE OU REGLE DE LA PRISE MAX OBLIGATOIRE NON RESPECTEE ! "
+        if not self.centralPosOk(self.pos_depart, self.pos_arrivee):
+            self.info = "POSITION CENTRALE INTERDITE AUX SOLDATS ! "
+    def posLibre(self, pos):
+        return self.matrice_jeu[pos.x, pos.y] == 0
+    def Play(self, pos_init, pos_finale, l=[]):
+        """
+        :param l: liste de positions à capturer
+        :return:
+        """
+        if len(l) == 0:
+            self.matrice_jeu[pos_finale.x, pos_finale.y] = self.matrice_jeu[pos_init.x, pos_init.y]
+            self.matrice_jeu[pos_init.x, pos_init.y] = 0
+        else:
+            for pos in l:
+                if not self.matrice_jeu[pos.x, pos.y] in (11, 12):
+                    self.matrice_jeu[pos.x, pos.y] = 0
+            self.matrice_jeu[pos_init.x, pos_init.y] = 0
+            self.matrice_jeu[pos_finale.x, pos_finale.y] = self.player
+    def centralPosOk(self, pos_depart, pos_arrivee):
+        """
+        :param pos_depart: position 1er click
+        :param pos_arrivee: position 2nd click
+        :return: renvoie False si le joueur veut déplacer un soldat en position centrale (4,4)
+        """
+        boule = True
+        if pos_arrivee == Position(4, 4) and self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
+            boule = False
+        return boule
+    def save_jeu(self, filename):
+        with open(filename, 'w') as f:
+            f.write(str(self.player) + "\n")
+            for i in range(N):
+                for j in range(N):
+                    if self.matrice_jeu[i, j] != 0:
+                        f.write(str(i) + " " + str(j) + " " + str(self.matrice_jeu[i, j]) + "\n")
 
 def load_jeu(filename):
     """

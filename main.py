@@ -10,7 +10,9 @@ import sys
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    # initialise_jeu("init_jeu.txt")
+    #   initialise_jeu("init_jeu.txt")
+
+    # fichier de test de la capture max
     initialise_jeu("../game_backups/capture")
 
     sys.exit(app.exec_())

@@ -26,8 +26,6 @@ Betweenness
 
    betweenness_centrality
    edge_betweenness_centrality
-   betweenness_centrality_subset
-   edge_betweenness_centrality_subset
 
 Current Flow Closeness
 ----------------------
@@ -35,6 +33,7 @@ Current Flow Closeness
    :toctree: generated/
 
    current_flow_closeness_centrality
+
 
 Current-Flow Betweenness
 ------------------------
@@ -44,8 +43,7 @@ Current-Flow Betweenness
    current_flow_betweenness_centrality
    edge_current_flow_betweenness_centrality
    approximate_current_flow_betweenness_centrality
-   current_flow_betweenness_centrality_subset
-   edge_current_flow_betweenness_centrality_subset
+
 
 Eigenvector
 -----------
@@ -84,9 +82,6 @@ Dispersion
 
    dispersion
 
-Harmonic Centrality
--------------------
-.. autosummary::
-   :toctree: generated/
 
-   harmonic_centrality
+
+

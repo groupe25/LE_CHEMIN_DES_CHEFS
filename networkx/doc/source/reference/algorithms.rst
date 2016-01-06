@@ -24,7 +24,6 @@ Algorithms
    algorithms.connectivity
    algorithms.core
    algorithms.cycles
-   algorithms.cuts
    algorithms.dag
    algorithms.distance_measures
    algorithms.distance_regular
@@ -42,8 +41,8 @@ Algorithms
    algorithms.matching
    algorithms.minors
    algorithms.mis
+   algorithms.mst
    algorithms.operators
-   algorithms.reciprocity
    algorithms.rich_club
    algorithms.shortest_paths
    algorithms.simple_paths
