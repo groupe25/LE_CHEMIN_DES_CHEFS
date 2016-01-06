@@ -10,7 +10,14 @@ try:
     from networkx import DiGraph
 except ImportError:
     print("module networkx non installé pour python 3.")
-    print("Pour l'installer 'pip3 install networkx' ou 'python3 -m install pip networkx' ")
+    print("Pour l'installer si vous avez les droits root faire \
+    'pip3 install networkx' ou 'python3 -m install pip networkx' ")
+    print("Pour une installation sans droit root : télécharger networx, le copier dans le répertoire du projet,"
+          "se placer dans le dossier de networkx ett taper : python3 setup.py install --user")
+    print("En cas de problème avec pydot commenter les lignes")
+    print(" nx.write_dot(self.g, 'toto.dot")
+    print("os.system('dot -Tpng toto.dot -o toto.png')")
+    print(" Vous n'aurez le graphe au format png mais le programme devrait s'éxécuter.")
 
 
 class Position:
@@ -43,6 +50,7 @@ class Jeu(object):
         self.pos_depart = Position(0, 0)
         self.pos_arrivee = Position(0, 0)
         self.g = DiGraph()  # implémentation d'un arbre n-aire
+        self.nivMax = 0
 
 
     def switch_player(self):
@@ -197,72 +205,86 @@ class Jeu(object):
         niv = 0
         self.g.add_node(self.player,niveau = niv)
         print("ggg",self.g.nodes(), "lll", self.g.node[self.player]['niveau'])
+        # niv = 1
+        # listeOfNodes1 = []
+        # for i in range(N):
+        #     for j in range(N):
+        #         if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(Position(i, j)):
+        #             self.g.add_edge(self.player, (i, j))
+        #             listeOfNodes1.append((i,j))
+        #             self.g.add_node((i,j),niveau = niv)
+        #
+        # niv = 2
+        # listeOfNodes2 = []
+        # for (i,j) in listeOfNodes1:
+        #     s = self.listePosSuiv(Position(i,j))
+        #     for (m,n) in s:
+        #          self.g.add_edge((i, j), (m, n))
+        #          listeOfNodes2.append((m,n))
+        #          self.g.add_node((m,n),niveau = niv)
+        # print("liste nodes 2 ", listeOfNodes2)
+        #
+        #
+        # niv = 3
+        # listeOfNodes1.clear()
+        # for (i,j) in listeOfNodes2:
+        #     for (m,n) in self.listePosSuiv(Position(i,j)):
+        #          print("possuiv m n",m,n)
+        #          self.g.add_edge((i, j), (m, n))
+        #          listeOfNodes1.append((m,n))
+        #          self.g.add_node((m,n),niveau = niv)
+        #
+        # # print(" liste de noeud n-1", listeOfNodes1)
+        #
+        #
+        # listeOfNodes2.clear()
+        # niv = 4
+        # for (i,j) in listeOfNodes1:
+        #     print("niv4 ", self.listePosSuiv(Position(i,j)))
+        #     for (m,n) in self.listePosSuiv(Position(i,j)):
+        #          print("possuiv m n",m,n)
+        #
+        #          self.g.add_edge((i, j), (m, n))
+        #          listeOfNodes2.append((m,n))
+        #          self.g.add_node((m,n),niveau = niv)
         niv = 1
         listeOfNodes1 = []
+        listeOfNodes2=[]
         for i in range(N):
             for j in range(N):
                 if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(Position(i, j)):
                     self.g.add_edge(self.player, (i, j))
                     listeOfNodes1.append((i,j))
                     self.g.add_node((i,j),niveau = niv)
-        # self.g.add_edges_from(listeOfEdges) # crée les aretes et les noeuds associés
-        #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-        # print("list of nodes", listeOfNodes1)
         niv = 2
-        listeOfNodes2 = []
-        for (i,j) in listeOfNodes1:
-            s = self.listePosSuiv(Position(i,j))
-            for (m,n) in s:
-                 self.g.add_edge((i, j), (m, n))
-                 listeOfNodes2.append((m,n))
-                 self.g.add_node((m,n),niveau = niv)
-        print("liste nodes 2 ", listeOfNodes2)
+        while niv < 18:
+            listeOfNodes1.clear()
+            for (i,j) in listeOfNodes2:
+                print("niv5 ", self.listePosSuiv(Position(i,j)))
+                for (m,n) in self.listePosSuiv(Position(i,j)):
+                     # self.g.add_edge((i, j), (m, n))
+                     # listeOfNodes1.append((m,n))
+                     # self.g.add_node((m,n),niveau = niv)
+                    if not self.g.has_edge((m,n),(i,j)):
+                        self.g.add_edge((i, j), (m, n))
+                        listeOfNodes1.append((m,n))
+                        self.g.add_node((m,n),niveau = niv)
+                    else:
+                         listeOfNodes1.clear()
 
+            niv =+ 1
+            listeOfNodes2.clear()
+            for (i,j) in listeOfNodes1:
+                print("niv5 ", self.listePosSuiv(Position(i,j)))
+                for (m,n) in self.listePosSuiv(Position(i,j)):
+                     if not self.g.has_edge((m,n),(i,j)):
+                        self.g.add_edge((i, j), (m, n))
+                        listeOfNodes2.append((m,n))
+                        self.g.add_node((m,n),niveau = niv)
+                     else:
+                         listeOfNodes2.clear()
 
-        niv = 3
-        listeOfNodes1.clear()
-        for (i,j) in listeOfNodes2:
-            for (m,n) in self.listePosSuiv(Position(i,j)):
-                 print("possuiv m n",m,n)
-                 self.g.add_edge((i, j), (m, n))
-                 listeOfNodes1.append((m,n))
-                 self.g.add_node((m,n),niveau = niv)
-
-        # print(" liste de noeud n-1", listeOfNodes1)
-
-
-        listeOfNodes2.clear()
-        niv = 4
-        for (i,j) in listeOfNodes1:
-            print("niv4 ", self.listePosSuiv(Position(i,j)))
-            for (m,n) in self.listePosSuiv(Position(i,j)):
-                 print("possuiv m n",m,n)
-                 self.g.add_edge((i, j), (m, n))
-                 listeOfNodes2.append((m,n))
-                 self.g.add_node((m,n),niveau = niv)
-
-
-        niv = 5
-        listeOfNodes1.clear()
-        for (i,j) in listeOfNodes2:
-            print("niv5 ", self.listePosSuiv(Position(i,j)))
-            for (m,n) in self.listePosSuiv(Position(i,j)):
-                 print("possuiv m n",m,n)
-                 self.g.add_edge((i, j), (m, n))
-                 listeOfNodes1.append((m,n))
-                 self.g.add_node((m,n),niveau = niv)
-
-        # print(" liste de noeud 1", listeOfNodes1)
-        # print(" liste de noeud 2", listeOfNodes2)
-        # niv = 6
-        # listeOfNodes2.clear()
-        # for (i,j) in listeOfNodes1:
-        #     print("niv5 ", self.listePosSuiv(Position(i,j)))
-        #     for (m,n) in self.listePosSuiv(Position(i,j)):
-        #          print("possuiv m n",m,n)
-        #          self.g.add_edge((i, j), (m, n))
-        #          listeOfNodes1.append((m,n))
-        #          self.g.add_node((m,n),niveau = niv)
+            niv+= 1
 
 
 
@@ -281,7 +303,7 @@ class Jeu(object):
         # print("self.posSuiv wwwwwwwwwww ", self.listePosSuiv(pos))
         #print("listePosAdversesVoisines(pos)", self.listePosAdversesVoisines( pos))
 
-
+        # décommenter cette ligne pour obtenir le dessin du graphe au format png
         nx.write_dot(self.g, 'toto.dot')
         os.system('dot -Tpng toto.dot -o toto.png')
         ###############################################################################################

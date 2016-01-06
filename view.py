@@ -33,9 +33,9 @@ class Window(QMainWindow):
         super(Window, self).__init__()
         self.image_pion = {1: "pion1.png", 2: "pion2.png", 11: "chef1.png", 12: "chef2.png", 0: ""}
         winSize = min(QDesktopWidget().height(), QDesktopWidget().width())  # dim fenetre vs écran
-        # self.resize(RATIO * winSize, RATIO * winSize)
+        self.resize(RATIO * winSize, RATIO * winSize)
         self.setWindowIcon(QIcon(RESSOURCES + "logo_enac.png"))
-        self.setFixedSize(RATIO * winSize, RATIO * winSize)  # pour avoir une fenêtre de taille fixée
+        # self.setFixedSize(RATIO * winSize, RATIO * winSize)  # pour avoir une fenêtre de taille fixée
         self.centrerSurEcran()
         self.initMenu()
         self.jeu = Jeu(first_player, matrice_jeu)
