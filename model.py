@@ -49,7 +49,7 @@ class Jeu(object):
         self.info = ""
         self.pos_depart = Position(0, 0)
         self.pos_arrivee = Position(0, 0)
-        self.g = DiGraph()  # implémentation d'un arbre n-aire
+        self.g = DiGraph() #implémentation d'un arbre n-aire
         self.nivMax = 0  # niveau max tel que nivMax+1 = hauteur de l'arbre
 
     def switch_player(self):
@@ -167,7 +167,8 @@ class Jeu(object):
         self.g.clear()
         niv = 0
         # création du noeud avec l'attribut niv=0 cf. networkx documentation
-        self.g.add_node(self.player, niveau=niv)
+        # self.g.add_node(self.player, niveau=niv)
+        self.g.add_node((-1, -1), niveau=niv)
         niv = 1
         listeOfNodes = []
         # Pour tous les positions du jeu, on recherche les pions du joueur courant
@@ -175,7 +176,7 @@ class Jeu(object):
         for i in range(N):
             for j in range(N):
                 if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(Position(i, j)):
-                    self.g.add_edge(self.player, (i, j))
+                    self.g.add_edge((-1,-1), (i, j))
                     listeOfNodes.append((i, j))
                     self.g.add_node((i, j), niveau=niv)
         # Le niveau dans les attributs du noeud permettra de sélectionner les branches de
@@ -218,16 +219,31 @@ class Jeu(object):
             # # sont dans la liste l
             # boule = True
         ##################################################"
-        print(self.priseMax(self.g))
+        print(self.listePosFinalePriseMax(self.g))
+        print(self.listeCaptureMax(self.g, Position(2,4)))
+
         return boule
 
-    def priseMax(self, g):
-        l=[]
-        for n, nbrsdict in g.adjacency_iter():
-            for nbr, eattr in nbrsdict.items():
-                if 'niveau' in eattr:
-                    print((n,nbr))
-        return l
+    def listeCaptureMax(self,g, pos_finale):
+            listePosCaptureMax =[]
+            pred = self.g.predecessors((pos_finale.x,pos_finale.y))[0]
+            print("pred", pred)
+            while pred != (-1,-1):
+                x = (pred[0] + pos_finale.x)/2
+                y = (pred[1] + pos_finale.y)/2
+                listePosCaptureMax.append((x,y))
+            return listePosCaptureMax
+
+
+
+    def listePosFinalePriseMax(self, g):
+        """
+        donne les positions licite pour le 2nd click du joueur courant
+        :param g: arbre de capture g
+        :return: liste des pos de niveau donc de capture max obtenue par un "graphe en compréhension"
+        """
+        return [(i,j) for (i,j) in g if g.node[(i,j)]['niveau'] == self.nivMax ]
+
 
     def secondClickValide(self, pos_depart, pos_arrivee):
         boule = self.posLibre(pos_arrivee)
@@ -316,3 +332,4 @@ def load_jeu(filename):
     except Exception:
         print("Problème ouverture ou lecture fichier : vérifier le nom et le path.")
     return matrice_jeu, player
+
