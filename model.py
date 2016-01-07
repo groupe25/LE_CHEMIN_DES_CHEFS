@@ -2,7 +2,6 @@ __author__ = 'IENAC15 - groupe 25'
 from constantes import *
 import numpy as np
 from random import randint
-import os
 
 try:
     import networkx as nx
