@@ -3,10 +3,8 @@ __author__ = 'IENAC15 - groupe 25'
 # -*-coding: utf-8 -*-
 import os
 
-
 RESSOURCES = os.getcwd() + os.sep + "ressources" + os.sep
 BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
-
 
 from constantes import *
 from model import Jeu, load_jeu
@@ -40,7 +38,7 @@ class Window(QMainWindow):
         self.initMenu()
         self.jeu = Jeu(first_player, matrice_jeu)
         self.affichePlayerCourant(self.jeu.player)
-      # self.setFixedSize(RATIO * winSize, RATIO * winSize)  # pour avoir une fenêtre de taille fixée
+        # self.setFixedSize(RATIO * winSize, RATIO * winSize)  # pour avoir une fenêtre de taille fixée
 
     def initMenu(self):
         self.setWindowTitle('Le chemin des chefs - IENAC 15 - Groupe 25')
@@ -168,15 +166,14 @@ class Window(QMainWindow):
         else:
             self.bas.setText(txt)
 
-    def afficheInfo(self, txt, width = 250):
+    def afficheInfo(self, txt, width=250):
         """
         :param txt: affiche le txt au dessus du plateau
         :return:
         """
-        self.information.setGeometry(0,0, width, 20)
+        self.information.setGeometry(0, 0, width, 20)
         self.information.setStyleSheet('color: red')
         self.information.setText(txt)
-
 
     def centrerSurEcran(self):
         qr = self.frameGeometry()
@@ -253,4 +250,3 @@ class Button(QPushButton):
             self.win.afficheInfo(txt)
         elif self.win.jeu.info:
             self.win.afficheInfo(self.win.jeu.info, 2000)
-

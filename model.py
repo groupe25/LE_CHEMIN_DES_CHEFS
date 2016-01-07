@@ -190,13 +190,13 @@ class Jeu(object):
             # construction de l'arbre de capture à partir du niveau 2
             # les noeuds sont les positions successives du pion capturant
             self.construireArbre(listeOfNodes, 2, pos)
-###########################################################################################################
-            # décommenter cette ligne pour obtenir le dessin du graphe au format png
-            # graphviz nécessaire (install via yum sur les distrib red-hat like) + problème pydot probable.
-            # le fichier de test est
-            # nx.write_dot(self.g, 'tree.dot')
-            # os.system('dot -Tpng tree.dot -o tree.png')
-###########################################################################################################
+        ###########################################################################################################
+        # décommenter cette ligne pour obtenir le dessin du graphe au format png
+        # graphviz nécessaire (install via yum sur les distrib red-hat like) + problème pydot probable.
+        # le fichier de test est
+        # nx.write_dot(self.g, 'tree.dot')
+        # os.system('dot -Tpng tree.dot -o tree.png')
+        ###########################################################################################################
         boule = False
         if len(self.g.nodes()) == 1:
             # cas sans capture possibles. Le joueur courant ne peut clicker que sur ses pions
