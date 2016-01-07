@@ -51,8 +51,8 @@ class Jeu(object):
         self.pos_arrivee = Position(0, 0)
         self.g = DiGraph() #implémentation d'un arbre n-aire
         self.nivMax = 0  # niveau max tel que nivMax+1 = hauteur de l'arbre
-        self.listePosFinalePriseMax = []
-        self.listePosCaptureMax = []
+        self.listePosFinalePriseMax = [] # pos licites pour le click2
+        self.listePosCaptureMax = []  # pos des pions à capturer
 
     def switch_player(self):
         if self.player == 1:
@@ -228,7 +228,7 @@ class Jeu(object):
 
         self.calculCaptureMaxPos(self.g, Position(7,7))
         print(self.listePosCaptureMax)
-
+        print("niv 1", self.listePosNiveau(self.g, 1))
         return boule
 
     def calculCaptureMax(self,g, coord_fin):
@@ -250,16 +250,23 @@ class Jeu(object):
         """
         self.calculCaptureMax(g, (pos.x,pos.y))
 
-
     def listePosFinalePriseMax(self, g):
         """
         donne les positions licites pour le 2nd click du joueur courant
         :param g: arbre de capture g
         :return: liste des pos de niveau donc de capture max obtenue par un "graphe en compréhension"
         """
-        self.listePosFinalePriseMax =\
-            [(i,j) for (i,j) in g if g.node[(i,j)]['niveau'] == self.nivMax ]
+        self.listePosFinalePriseMax =self.listePosNiveau(self, g, self.nivMax)
 
+    def listePosInit(self, g):
+
+    def listePosNiveau(self, g, niveau):
+        """
+        :param g: arbre de capture
+        :param niveau: niveau dont on cherche les noeuds
+        :return: liste de noeuds de niveau = à niveau
+        """
+           return [(i,j) for (i,j) in g if g.node[(i,j)]['niveau'] == niveau ]
 
     def secondClickValide(self, pos_depart, pos_arrivee):
         boule = self.posLibre(pos_arrivee)
