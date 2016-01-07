@@ -258,15 +258,13 @@ class Jeu(object):
         """
         self.listePosFinalePriseMax =self.listePosNiveau(self, g, self.nivMax)
 
-    def listePosInit(self, g):
-
     def listePosNiveau(self, g, niveau):
         """
         :param g: arbre de capture
         :param niveau: niveau dont on cherche les noeuds
         :return: liste de noeuds de niveau = à niveau
         """
-           return [(i,j) for (i,j) in g if g.node[(i,j)]['niveau'] == niveau ]
+        return [(i,j) for (i,j) in g if g.node[(i,j)]['niveau'] == niveau ]
 
     def secondClickValide(self, pos_depart, pos_arrivee):
         boule = self.posLibre(pos_arrivee)
