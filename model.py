@@ -196,7 +196,7 @@ class Jeu(object):
        # FAUX listePosInitialesPriseMax= self.listeCoordNiveau(self.g, 1)
         # La liste du ou des pions à capturer suite à ces 1er et 2nd click
         self.listePosCaptureMax = []  # pos des pions à capturer
-        self.calculCaptureMaxPos(self.g, pos_arrivee)
+        # self.calculCaptureMaxPos(self.g, pos_arrivee)
 
         # décommenter cette ligne pour obtenir le dessin du graphe au format png
         # graphviz nécessaire (install via yum sur les distrib red-hat like) + problème pydot probable.
