@@ -151,7 +151,9 @@ class Jeu(object):
         :return: none :
         """
         listeOfNodes1 = []
-        if len(listeOfNodes) != 0 and len(listeOfNodes1) != 0 or self.nivMax == 5: return
+        print(" len ", len(listeOfNodes))
+        # if len(listeOfNodes) != 0 and len(listeOfNodes1) != 0 or self.nivMax == 5: return
+        if len(listeOfNodes) == 0 and len(listeOfNodes1) == 0 : return
         for (i, j) in listeOfNodes:
             for (m, n) in self.listePosSuiv(Position(i, j)):
                 if not self.g.has_edge((m, n), (i, j)):
@@ -166,54 +168,55 @@ class Jeu(object):
         :param pos: position pos du premier click du joueur
         :return: bouléen = True si le click 1 est valide
         """
-        self.nivMax = 0
-        self.g.clear()
-        niv = 0
-        # création du noeud avec l'attribut niv=0 cf. networkx documentation
-        # ce noeud racine est nommé (-1,-1) ce qui sert comme critère d'arrêt
-        # lors du parcours de l'arbre
-        self.g.add_node((-1, -1), niveau=niv)
-        niv = 1
-        listeOfNodes = []
-        # Pour tous les positions du jeu, on recherche les pions du joueur courant
-        # qui sont à même de capturer des pions adverses
-        for i in range(N):
-            for j in range(N):
-                if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(Position(i, j)):
-                    self.g.add_edge((-1,-1), (i, j))
-                    listeOfNodes.append((i, j))
-                    self.g.add_node((i, j), niveau=niv)
-        # Le niveau dans les attributs du noeud permettra de sélectionner les branches de
-        # de longueur max = nivMax pour avoir les positions licites car prise max obligatoire
-        # construction de l'arbre de capture à partir du niveau 2
-        # les noeuds sont les positions successives du pion capturant
-        self.construireArbre(listeOfNodes, 2, pos)
-
-        # décommenter cette ligne pour obtenir le dessin du graphe au format png
-        # graphviz nécessaire (install via yum sur les distrib red-hat like) + problème pydot probable.
-        # le fichier de test est
-        # nx.write_dot(self.g, 'tree.dot')
-        # os.system('dot -Tpng tree.dot -o tree.png')
 
         boule = False
-        if len(self.g.nodes()) == 0:
-        # cas sans capture possibles. Le joueur courant ne peut clicker que sur ses pions
+        if not self.existeCaptureObligatoire(pos):
+            # cas sans capture possibles. Le joueur courant ne peut clicker que sur ses pions
             l = []
             for m in range(N):
                 for n in range(N):
                     if (self.player == 1 and self.matrice_jeu[m, n] in (1, 11)) or \
                             (self.player == 2 and self.matrice_jeu[m, n] in (2, 12)):
                         l.append((m, n))  # contient les pos des pions du joueur courant, chefs compris
+
             if (pos.x, pos.y) in l: boule = True  # 1er click OK car sur pion du joueur courant
         else:
-                  # A l'aide du graphe obtenu, on détermine ensuite :
-        # la liste des pos init qui induisent une CAPTURE MAX
-        # nb : en général, c'est un sous ensemble des pos avec capture possible
-        # => ce qui donne les actions licites lors du 1er click
-        # nb : le filtrage des pos de prise max se fera au second click
-        # 1 - click1 : ce sont celles qui sont de niveau 1 dans "l'arbre de capture"
-       # FAUX listePosInitialesPriseMax= self.listeCoordNiveau(self.g, 1)
-        # liste du ou des pions à capturer suite à ces 1er et 2nd click
+            self.nivMax = 0
+            self.g.clear()
+            niv = 0
+            # création du noeud avec l'attribut niv=0 cf. networkx documentation
+            # ce noeud racine est nommé (-1,-1) ce qui sert comme critère d'arrêt
+            # lors du parcours de l'arbre
+            self.g.add_node((-1, -1), niveau=niv)
+            niv = 1
+            listeOfNodes = []
+            # Pour tous les positions du jeu, on recherche les pions du joueur courant
+            # qui sont à même de capturer des pions adverses
+            for i in range(N):
+                for j in range(N):
+                    if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(Position(i, j)):
+                        self.g.add_edge((-1,-1), (i, j))
+                        listeOfNodes.append((i, j))
+                        self.g.add_node((i, j), niveau=niv)
+
+            # Le niveau dans les attributs du noeud permettra de sélectionner les branches de
+            # de longueur max = nivMax pour avoir les positions licites car prise max obligatoire
+            # construction de l'arbre de capture à partir du niveau 2
+            # les noeuds sont les positions successives du pion capturant
+            self.construireArbre(listeOfNodes, 2, pos)
+
+            # décommenter cette ligne pour obtenir le dessin du graphe au format png
+            # graphviz nécessaire (install via yum sur les distrib red-hat like) + problème pydot probable.
+            # le fichier de test est
+            nx.write_dot(self.g, 'tree.dot')
+            os.system('dot -Tpng tree.dot -o tree.png')
+            # A l'aide du graphe obtenu, on détermine ensuite :
+            # la liste des pos init qui induisent une CAPTURE MAX
+            # nb : en général, c'est un sous ensemble des pos avec capture possible
+            # => ce qui donne les actions licites lors du 1er click
+            # nb : le filtrage des pos de prise max se fera au second click
+            # 1 - click1 : ce sont celles qui sont de niveau 1 dans "l'arbre de capture"
+            # liste du ou des pions à capturer suite à ces 1er et 2nd click
             self.listePosInitPriseMax=[]
             self.calculPosToutesCaptureMax(self.g)
             if (pos.x,pos.y) in self.listePosInitPriseMax : boule = True
@@ -221,18 +224,18 @@ class Jeu(object):
 
 
     def secondClickValide(self, pos_depart, pos_arrivee):
-
-        if len(self.g.nodes()) == 0:
-            boule = self.posLibre(pos_arrivee)
+        boule = self.posLibre(pos_arrivee)
+        if not self.existeCaptureObligatoire(pos_depart):
             if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
                 boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
             else:  # cas où les pions sont des chefs  self.matrice_jeu[pos_depart.x, pos_depart.y] in (11, 12):
                 boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesChef(self.pos_depart)
-        else:
+        else: # cas où il existe des prises possibles
         # On calcule la liste des pos finales => ce qui donne les actions licites lors du 2nd click
             self.listePosFinalePriseMax = self.listeCoordNiveau(self.g, self.nivMax)
         # on calcule les positions des pions à capturer
             self.calculCaptureMaxPos(self.g, pos_arrivee)
+        if (pos_arrivee.x, pos_arrivee.y) in self.listePosFinalePriseMax: boule = True
 
         return boule
 
@@ -289,7 +292,7 @@ class Jeu(object):
             self.pos_arrivee = Position(i, j)  # affectation ajoutée pour rendre le code plus lisible
             self.click = 0
             if self.secondClickValide(self.pos_depart, self.pos_arrivee):
-                self.Play(self.pos_depart, self.pos_arrivee)
+                self.Play(self.pos_depart, self.pos_arrivee,self.listePosCaptureMax)
                 self.switch_player()
         elif self.centralPosOk(self.pos_depart, self.pos_arrivee):
             self.info = "CLICK INVALIDE OU REGLE DE LA PRISE MAX OBLIGATOIRE NON RESPECTEE ! "
