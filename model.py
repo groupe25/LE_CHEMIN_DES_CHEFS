@@ -51,6 +51,7 @@ class Jeu(object):
         self.pos_arrivee = Position(0, 0)
         self.g = DiGraph() #implémentation d'un arbre n-aire
         self.nivMax = 0  # niveau max tel que nivMax+1 = hauteur de l'arbre
+        self.listePosInitPriseMax = [] # pos licites pour le click1 si capture possible
         self.listePosFinalePriseMax = [] # pos licites pour le click2
         self.listePosCaptureMax = []  # pos des pions à capturer
 
@@ -188,16 +189,6 @@ class Jeu(object):
         # les noeuds sont les positions successives du pion capturant
         self.construireArbre(listeOfNodes, 2, pos)
 
-        # A l'aide du graphe obtenu, on détermine ensuite :
-        # la liste des pos init qui induisent une capture max
-        # => ce qui donne les actions licites lors du 1er click
-        # nb : le filtrage des pos de prise max se fera au second click
-        # 1 - click1 : ce sont celles qui sont de niveau 1 dans "l'arbre de capture"
-       # FAUX listePosInitialesPriseMax= self.listeCoordNiveau(self.g, 1)
-        # La liste du ou des pions à capturer suite à ces 1er et 2nd click
-        self.listePosCaptureMax = []  # pos des pions à capturer
-        # self.calculCaptureMaxPos(self.g, pos_arrivee)
-
         # décommenter cette ligne pour obtenir le dessin du graphe au format png
         # graphviz nécessaire (install via yum sur les distrib red-hat like) + problème pydot probable.
         # le fichier de test est
@@ -215,31 +206,47 @@ class Jeu(object):
                         l.append((m, n))  # contient les pos des pions du joueur courant, chefs compris
             if (pos.x, pos.y) in l: boule = True  # 1er click OK car sur pion du joueur courant
         else:
-            if (pos.x,pos.y) in listePosInitialesPriseMax : boule = True
-        # il existe des captures obligatoires. Les seules positions légales sont les pions
-        # du joueur courant qui donneront lieu à une capture max
-
-            # self.listePriseMax = [(i, j) for (i, j) in l if self.matrice_jeu[i, j] not in (11, 12)
-            #                       and self.existeCaptureObligatoire(Position(i, j))]
-            #
-            # elif len(self.listePriseMax) == 0 or (pos.x,pos.y) in self.listePriseMax:  # s'il n'existe pas de capture obligatoire les pos valides
-            # # sont dans la liste l
-            # boule = True
-        ##################################################"
-
+                  # A l'aide du graphe obtenu, on détermine ensuite :
+        # la liste des pos init qui induisent une CAPTURE MAX
+        # nb : en général, c'est un sous ensemble des pos avec capture possible
+        # => ce qui donne les actions licites lors du 1er click
+        # nb : le filtrage des pos de prise max se fera au second click
+        # 1 - click1 : ce sont celles qui sont de niveau 1 dans "l'arbre de capture"
+       # FAUX listePosInitialesPriseMax= self.listeCoordNiveau(self.g, 1)
+        # liste du ou des pions à capturer suite à ces 1er et 2nd click
+            self.listePosInitPriseMax=[]
+            self.calculPosToutesCaptureMax(self.g)
+            if (pos.x,pos.y) in self.listePosInitPriseMax : boule = True
         return boule
 
 
     def secondClickValide(self, pos_depart, pos_arrivee):
-        # On calcule la liste des pos finales => ce qui donne les actions licites lors du 2nd click
-        self.listePosFinalePriseMax = self.listeCoordNiveau(self.g, self.nivMax)
 
-        boule = self.posLibre(pos_arrivee)
-        if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
-            boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
-        else:  # cas où les pions sont des chefs  self.matrice_jeu[pos_depart.x, pos_depart.y] in (11, 12):
-            boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesChef(self.pos_depart)
+        if len(self.g.nodes()) == 0:
+            boule = self.posLibre(pos_arrivee)
+            if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
+                boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
+            else:  # cas où les pions sont des chefs  self.matrice_jeu[pos_depart.x, pos_depart.y] in (11, 12):
+                boule = boule and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesChef(self.pos_depart)
+        else:
+        # On calcule la liste des pos finales => ce qui donne les actions licites lors du 2nd click
+            self.listePosFinalePriseMax = self.listeCoordNiveau(self.g, self.nivMax)
+        # on calcule les positions des pions à capturer
+            self.calculCaptureMaxPos(self.g, pos_arrivee)
+
         return boule
+
+    def calculPosUneInitCaptureMax(self,g, coord_fin):
+        pred = self.g.predecessors(coord_fin)[0]
+        if self.g.node[pred]['niveau'] == 1:
+            self.listePosInitPriseMax.append(pred)
+            return
+        self.calculPosUneInitCaptureMax(g, pred)
+
+    def calculPosToutesCaptureMax(self,g):
+        l = self.listeCoordNiveau(self.g, self.nivMax)
+        for (i,j) in l:
+            self.calculPosUneInitCaptureMax(self.g, (i,j))
 
     def calculCaptureMax(self,g, coord_fin):
         """
