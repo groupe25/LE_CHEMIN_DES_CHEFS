@@ -13,6 +13,6 @@ if __name__ == '__main__':
     #   initialise_jeu("init_jeu.txt")
 
     # fichier de test de la capture max
-    initialise_jeu("../game_backups/capture")
+    initialise_jeu("../game_backups/0_testCaptureMax.txt")
 
     sys.exit(app.exec_())
