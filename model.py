@@ -195,6 +195,8 @@ class Jeu(object):
         nx.write_dot(self.g, 'tree.dot')
         os.system('dot -Tpng tree.dot -o tree.png')
 
+
+
         boule = False
         if len(self.g.nodes()) == 0:
         # cas sans capture possibles. Le joueur courant ne peut clicker que sur ses pions
@@ -221,18 +223,23 @@ class Jeu(object):
         ##################################################"
         print(self.listePosFinalePriseMax(self.g))
         print(self.listeCaptureMax(self.g, Position(2,4)))
+        pred = self.g.predecessors((6,4))[0]
+        print("nnn ", pred)
+        print(pred == (-1,-1))
 
         return boule
 
-    def listeCaptureMax(self,g, pos_finale):
-            listePosCaptureMax =[]
-            pred = self.g.predecessors((pos_finale.x,pos_finale.y))[0]
-            print("pred", pred)
-            while pred != (-1,-1):
-                x = (pred[0] + pos_finale.x)/2
-                y = (pred[1] + pos_finale.y)/2
-                listePosCaptureMax.append((x,y))
-            return listePosCaptureMax
+    def listeCaptureMax(self,g, pos_finale):pass
+            # listePosCaptureMax =[]
+            # pred = self.g.predecessors((pos_finale.x,pos_finale.y))[0]
+            # print("pred", pred)
+            # n=0
+            # n = n+1
+            # while pred != (-1,-1) or n<12:
+            #     x = (pred[0] + pos_finale.x)/2
+            #     y = (pred[1] + pos_finale.y)/2
+            #     listePosCaptureMax.append((x,y))
+            # return listePosCaptureMax
 
 
 
