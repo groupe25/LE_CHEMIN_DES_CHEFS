@@ -11,6 +11,7 @@ CHEMIN = [(4, 0), (5, 1), (5, 2), (5, 3), (6, 4), (7, 3),
 
 RATIO = 0.9  # ratio d'occupation de la fenêtre vis à vis de l'écran
 PLATEAUSIZE = 800
+TAILLE_PION = 64
 PATH_COLOR = QColor(0, 50, 250)
 RED = QColor(255, 0, 0)
 GREEN = QColor(0, 255, 0)
@@ -22,3 +23,4 @@ DECALAGE = TAILLE_CASE // 2
 BLANC = "background-color:rgba(255,255,255,255);"
 TRANSPARENT = "background-color: rgba(255,255,255,0) ;"
 RED = "background-color:rgba(250,250,0,150);"
+

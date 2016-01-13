@@ -235,7 +235,7 @@ class Button(QPushButton):
                       TAILLE_BTN, TAILLE_BTN))
         self.setFlat(True)
         self.setStyleSheet(TRANSPARENT)
-        self.setIconSize(QSize(64, 64))
+        self.setIconSize(QSize(TAILLE_PION, TAILLE_PION))
 
     def mousePressEvent(self, event):
         event.accept()
