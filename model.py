@@ -346,6 +346,7 @@ class Jeu(object):
         """
         return [(i, j) for (i, j) in g if g.node[(i, j)]['niveau'] == niveau]
 
+
     def jouer(self, i, j):
         pos = Position(i, j)
         self.info = ""
