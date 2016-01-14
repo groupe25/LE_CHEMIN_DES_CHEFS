@@ -8,7 +8,7 @@ BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
 
 from constantes import *
 from model import Jeu, load_jeu
-from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, QFileDialog
+from PyQt5.QtWidgets import QScrollArea, QScrollBar, QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, QFileDialog
 from PyQt5.QtGui import QPainter, QPen, QPolygon, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize
 
@@ -31,14 +31,21 @@ class Window(QMainWindow):
     def __init__(self, first_player, matrice_jeu):
         super(Window, self).__init__()
         self.image_pion = {1: "pion1.png", 2: "pion2.png", 11: "chef1.png", 12: "chef2.png", 0: ""}
-        winSize = min(QDesktopWidget().height(), QDesktopWidget().width())  # dim fenetre vs écran
-        self.resize(RATIO * winSize, RATIO * winSize)
+        self.winSize = min(QDesktopWidget().height(), QDesktopWidget().width())  # dim fenetre vs écran
+        # print("self.winSize ", QDesktopWidget().height())
+        self.ratioWinVsEcran = 1  # ratio d'occupation de la fenêtre vis à vis de l'écran
+        self.resize(self.ratioWinVsEcran * self.winSize, self.ratioWinVsEcran * self.winSize)
+        self.ratio = 0.70 # ratio plateau vs ecran
+        self.taillePlateau = self.winSize * self.ratio
+        self.marge = (self.winSize - self.taillePlateau) / 2  # marge fenêtre
+        self.tailleCase = self.taillePlateau / 8
+        self.decalage = self.tailleCase / 2
         self.setWindowIcon(QIcon(RESSOURCES + "logo_enac.png"))
         self.centrerSurEcran()
         self.initMenu()
         self.jeu = Jeu(first_player, matrice_jeu)
         self.affichePlayerCourant(self.jeu.player)
-        # self.setFixedSize(RATIO * winSize, RATIO * winSize)  # pour avoir une fenêtre de taille fixée
+        # self.setFixedSize(self.ratioWinVsEcran * self.winSize, self.ratioWinVsEcran * self.winSize)  # pour avoir une fenêtre de taille fixée
 
     def initMenu(self):
         self.setWindowTitle('Le chemin des chefs - IENAC 15 - Groupe 25')
@@ -56,14 +63,14 @@ class Window(QMainWindow):
         # menu et icône charger partie
         actionChargerPartie = menuFichier.addAction("&Charger une partie")
         actionChargerPartie.setIcon(QIcon(RESSOURCES + "folder.png"))
-        actionChargerPartie.triggered.connect(lambda: self.charger_partie())
+        actionChargerPartie.triggered.connect(lambda: self.chargerPartie())
         self.toolbar.addAction(actionChargerPartie)
         actionChargerPartie.setShortcut("Ctrl+C")
         actionChargerPartie.setStatusTip('Charger une partie')
         # menu et icône enregistrer partie
         actionEnregistrerPartie = menuFichier.addAction("&Enregistrer la partie")
         actionEnregistrerPartie.setIcon(QIcon(RESSOURCES + "save.png"))
-        actionEnregistrerPartie.triggered.connect(lambda: self.enregistrer_partie())
+        actionEnregistrerPartie.triggered.connect(lambda: self.enregistrerPartie())
         self.toolbar.addAction(actionEnregistrerPartie)
         actionEnregistrerPartie.setShortcut("Ctrl+E")
         actionEnregistrerPartie.setStatusTip("Sauvegarder la partie")
@@ -89,30 +96,32 @@ class Window(QMainWindow):
         actionQuitter.setStatusTip('Quitter l\'application')
         self.statusBar()
         self.toolbar.addAction(actionQuitter)
-        centralWidget = QWidget()
-        self.setCentralWidget(centralWidget)
+        # Définition du central widget
+        self.centralWidget = QWidget()
+        self.setCentralWidget(self.centralWidget)
+        self.centralWidget.setGeometry(0,0,self.winSize,self.winSize)
         # labels informant qui doit jouer
         self.haut = QLabel()
-        self.haut.setParent(centralWidget)
-        self.haut.setGeometry(PLATEAUSIZE / 2, MARGE / 3, 250, 20)
+        self.haut.setParent(self.centralWidget)
+        self.haut.setGeometry(self.taillePlateau / 2, self.marge / 3, 250, 20)
         self.bas = QLabel()
-        self.bas.setParent(centralWidget)
-        self.bas.setGeometry(PLATEAUSIZE / 2, TAILLE_FEN - MARGE / 2, 250, 20)
+        self.bas.setParent(self.centralWidget)
+        self.bas.setGeometry(self.taillePlateau / 2, self.winSize - self.marge, 250, 20)
         self.information = QLabel()
-        self.information.setParent(centralWidget)
+        self.information.setParent(self.centralWidget)
         self.information.setGeometry(0, 0, 250, 20)
-        centralWidget.setParent(self)
-        centralWidget.setGeometry(0, 0, TAILLE_FEN, TAILLE_FEN)
-        centralWidget.setStyleSheet(BLANC)
-        plateau = Plateau()
-        plateau.setParent(centralWidget)
-        plateau.setGeometry(MARGE, MARGE, PLATEAUSIZE, PLATEAUSIZE)
+        self.centralWidget.setParent(self)
+        self.centralWidget.setGeometry(0, 0, self.winSize, self.winSize)
+        self.centralWidget.setStyleSheet(BLANC)
+        plateau = Plateau(self)
+        # plateau.setParent(self.centralWidget)
+        plateau.setGeometry(self.marge, self.marge, self.taillePlateau, self.taillePlateau)
         self.btn = {}  # dico des boutons qui effectuent un pavage, ou recouvrement, du plateau
         # chaque bouton symbolise une intersection dans la grille constituant le plateau de jeu.
         for i in range(0, N):
             for j in range(0, N):
                 button = Button(self, i, j)
-                button.setParent(centralWidget)
+                # button.setParent(self.centralWidget)
                 button.setToolTip(str(i) + "_" + str(j))
                 self.btn[(i, j)] = button
 
@@ -134,7 +143,7 @@ class Window(QMainWindow):
         except Exception:
             print("Problème ouverture fichier ", filename)
 
-    def charger_partie(self):
+    def chargerPartie(self):
         try:
             filename = QFileDialog.getOpenFileName(self, 'Charger partie', BACKUPS_DIR)[0]
             l = list(load_jeu(filename))
@@ -145,9 +154,9 @@ class Window(QMainWindow):
         except Exception:
             print("Abandon chargement jeu ou Problème en lien avec l'ouverture de fichier")
 
-    def enregistrer_partie(self):
+    def enregistrerPartie(self):
         try:
-            filename = QFileDialog.getSaveFileName(self, 'Enregistrer_partie', BACKUPS_DIR)[0]
+            filename = QFileDialog.getSaveFileName(self, 'enregistrerPartie', BACKUPS_DIR)[0]
             self.jeu.save_jeu(filename)
         except Exception:
             print("Problème lors de l'enregistrement du fichier")
@@ -193,10 +202,10 @@ class Window(QMainWindow):
                 icon.addPixmap(QPixmap(RESSOURCES + self.image_pion.get(mat_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
                 self.btn[(i, j)].setIcon(icon)
 
-
 class Plateau(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,win):
+        super(Plateau, self).__init__(win)
+        self.win = win
 
     def paintEvent(self, e):
         qp = QPainter()
@@ -208,19 +217,21 @@ class Plateau(QWidget):
         pen = QPen(Qt.black, 2, Qt.SolidLine)
         qp.setPen(pen)
         for i in range(0, N):
-            qp.drawLine(i * TAILLE_CASE, 0, i * TAILLE_CASE, PLATEAUSIZE)
-            qp.drawLine(0, i * TAILLE_CASE, PLATEAUSIZE, i * TAILLE_CASE)
+            # qp.drawRect(i * self.win.tailleCase, 0, i * self.win.tailleCase, self.win.taillePlateau)
+            # qp.drawRect(0, i * self.win.tailleCase, self.win.taillePlateau, i * self.win.tailleCase)
+            qp.drawLine(i * self.win.tailleCase, 0, i * self.win.tailleCase, self.win.taillePlateau)
+            qp.drawLine(0, i * self.win.tailleCase, self.win.taillePlateau, i * self.win.tailleCase)
         pen = QPen(PATH_COLOR, 6, Qt.SolidLine)
         qp.setPen(pen)
         l = []
         for pt in CHEMIN:
-            l.append(QPoint(pt[0] * TAILLE_CASE, pt[1] * TAILLE_CASE))
+            l.append(QPoint(pt[0] * self.win.tailleCase, pt[1] * self.win.tailleCase))
             poly = QPolygon(l)
         qp.drawPolyline(poly)
         qp.setBrush(PATH_COLOR)
-        a = TAILLE_CASE / 5
+        a = self.win.tailleCase / 5
         b = a / 2
-        qp.drawRect(4 * TAILLE_CASE - b, 4 * TAILLE_CASE - b, a, a)
+        qp.drawRect(4 * self.win.tailleCase - b, 4 * self.win.tailleCase - b, a, a)
 
 
 class Button(QPushButton):
@@ -229,13 +240,14 @@ class Button(QPushButton):
         self.i = i
         self.j = j
         self.win = win
-        self.setGeometry( \
-                QRect(DECALAGE + TAILLE_CASE * i, \
-                      DECALAGE + TAILLE_CASE * j, \
-                      TAILLE_BTN, TAILLE_BTN))
+        self.tailleBouton = self.win.tailleCase
+        self.setGeometry( QRect(self.win.marge - self.win.decalage + self.win.tailleCase * i,
+                      self.win.marge - self.win.decalage + self.win.tailleCase * j,
+                      self.win.tailleCase, self.win.tailleCase))
         self.setFlat(True)
         self.setStyleSheet(TRANSPARENT)
-        self.setIconSize(QSize(TAILLE_PION, TAILLE_PION))
+        self.taillePion = int(self.win.tailleCase * 0.64)
+        self.setIconSize(QSize(self.taillePion, self.taillePion))
 
     def mousePressEvent(self, event):
         event.accept()

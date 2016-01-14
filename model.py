@@ -3,6 +3,8 @@ from constantes import *
 import numpy as np
 from random import randint
 
+# from digraph import *
+
 try:
     import networkx as nx
     from networkx import DiGraph
@@ -100,7 +102,7 @@ class Jeu(object):
             pos_prise = Position(2 * i - pos_depart.x,
                                  2 * j - pos_depart.y)  # calcul qui renvoie la position de prise "n+2"
             if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
-                if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0:  # pos libre
+                if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0 and pos_prise != Position(4,4):  # pos libre
                     listePosSuivantes.append((pos_prise.x, pos_prise.y))
         return listePosSuivantes
 
@@ -231,9 +233,9 @@ class Jeu(object):
             # décommenter cette ligne pour obtenir le dessin du graphe au format png
             # graphviz nécessaire (install via yum sur les distrib red-hat like) + problème pydot probable.
             # le fichier de test est 0_testCaptureMax.txt
-            # import os
-            # nx.write_dot(self.g, 'tree.dot')
-            # os.system('dot -Tpng tree.dot -o tree.png')
+            import os
+            nx.write_dot(self.g, 'tree.dot')
+            os.system('dot -Tpng tree.dot -o tree.png')
             ##################################################################################################
             #########
             # A l'aide du graphe obtenu, on détermine ensuite :
