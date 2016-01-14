@@ -5,6 +5,7 @@ from random import randint
 
 from digraph import *
 
+
 # try:
 #     import networkx as nx
 #     from networkx import DiGraph
@@ -50,8 +51,8 @@ class Jeu(object):
         self.info = ""
         self.pos_depart = Position(0, 0)
         self.pos_arrivee = Position(0, 0)
-        self.g = DiGraph()  # implémentation d'un arbre n-aire
-        self.nivMax = 0  # niveau max tel que nivMax+1 = hauteur de l'arbre
+        self.g = DiGraph()  # implémentation d'un digraph
+        self.nivMax = 0  # niveau max tel que nivMax+1 = hauteur du digraph
         self.listePosInitPriseMax = []  # pos licites pour le click1 si capture possible
         self.listePosFinalePriseMax = []  # pos licites pour le click2
         self.listePosCaptureMax = []  # pos des pions à capturer
@@ -102,7 +103,7 @@ class Jeu(object):
             pos_prise = Position(2 * i - pos_depart.x,
                                  2 * j - pos_depart.y)  # calcul qui renvoie la position de prise "n+2"
             if 0 <= pos_prise.x <= 8 and 0 <= pos_prise.y <= 8:  # pos existe car plateau de 9 x 9 position
-                if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0 and pos_prise != Position(4,4):  # pos libre
+                if self.matrice_jeu[pos_prise.x, pos_prise.y] == 0 and pos_prise != Position(4, 4):  # pos libre
                     listePosSuivantes.append((pos_prise.x, pos_prise.y))
         return listePosSuivantes
 
@@ -140,14 +141,14 @@ class Jeu(object):
         """
         return Position((pos_finale.x + pos_finale.x) / 2, (pos_finale.y + pos_finale.y) / 2)
 
-    # def construireArbre(self, listeOfNodes, niv, pos):
+    # def construiredigraph(self, listeOfNodes, niv, pos):
     #     """
-    #     fonction récursive qui construit un arbre des positions successives nécessaires pour capturer
+    #     fonction récursive qui construit un digraph des positions successives nécessaires pour capturer
     #     les pions.
     #     calcule aussi le niveau max nivMax tel que nivMax.
     #     Le nombre de pions capturé est = nivMax-1
-    #     :param listeOfNodes: liste de noeud de l'arbre
-    #     :param niv: niveau dans l'arbre i.e 0 pour la racine, 1, 2, 3 etc pour les niveaux suivants
+    #     :param listeOfNodes: liste de noeud de l'digraph
+    #     :param niv: niveau dans l'digraph i.e 0 pour la racine, 1, 2, 3 etc pour les niveaux suivants
     #     :param pos: position pos du click 1
     #     :return: none :
     #     """
@@ -161,16 +162,16 @@ class Jeu(object):
     #                 listeOfNodes1.append((m, n))
     #                 self.g.add_node((m, n), niveau=niv)
     #                 if self.nivMax < niv: self.nivMax = niv
-    #     self.construireArbre(listeOfNodes1, niv + 1, pos)
+    #     self.construiredigraph(listeOfNodes1, niv + 1, pos)
 
-    def construireArbre(self, listeOfNodes, niv):
+    def construiredigraph(self, listeOfNodes, niv):
         """
-        fonction récursive qui construit un arbre des positions successives nécessaires pour capturer
+        fonction récursive qui construit un digraph des positions successives nécessaires pour capturer
         les pions.
         calcule aussi le niveau max nivMax tel que nivMax.
         Le nombre de pions capturé est = nivMax-1
-        :param listeOfNodes: liste de noeud de l'arbre
-        :param niv: niveau dans l'arbre i.e 0 pour la racine, 1, 2, 3 etc pour les niveaux suivants
+        :param listeOfNodes: liste de noeud de l'digraph
+        :param niv: niveau dans l'digraph i.e 0 pour la racine, 1, 2, 3 etc pour les niveaux suivants
         :param pos: position pos du click 1
         :return: none :
         """
@@ -184,7 +185,7 @@ class Jeu(object):
                     listeOfNodes1.append((m, n))
                     self.g.add_node((m, n), niveau=niv)
                     if self.nivMax < niv: self.nivMax = niv
-        self.construireArbre(listeOfNodes1, niv + 1)
+        self.construiredigraph(listeOfNodes1, niv + 1)
 
     def firstClickValide(self, pos):
         """
@@ -199,7 +200,7 @@ class Jeu(object):
         niv = 0
         # création du noeud avec l'attribut niv=0 cf. networkx documentation
         # ce noeud racine est nommé (-1,-1) ce qui sert comme critère d'arrêt
-        # lors du parcours de l'arbre
+        # lors du parcours de l'digraph
         self.g.add_node((-1, -1), niveau=niv)
         niv = 1
         listeOfNodes = []
@@ -210,7 +211,7 @@ class Jeu(object):
                 if self.matrice_jeu[i, j] == self.player and self.existeCaptureObligatoire(Position(i, j)):
                     self.g.add_edge((-1, -1), (i, j))
                     listeOfNodes.append((i, j))
-                    self.g.add_node((i, j), niveau=niv) # ajout de l'attribut niveau
+                    self.g.add_node((i, j), niveau=niv)  # ajout de l'attribut niveau
         boule = False
         if len(self.g.nodes()) == 1:
             # cas sans capture possibles. Le joueur courant ne peut clicker que sur ses pions
@@ -226,9 +227,9 @@ class Jeu(object):
         else:
             # Le niveau dans les attributs du noeud permettra de sélectionner les branches de
             # de longueur max = nivMax pour avoir les positions licites car prise max obligatoire
-            # construction de l'arbre de capture à partir du niveau 2
+            # construction de l'digraph de capture à partir du niveau 2
             # les noeuds sont les positions successives du pion capturant
-            self.construireArbre(listeOfNodes, 2)
+            self.construiredigraph(listeOfNodes, 2)
             ###########################################################################################################
             # décommenter cette ligne pour obtenir le dessin du graphe au format png
             # graphviz nécessaire (install via yum sur les distrib red-hat like) + problème pydot probable.
@@ -243,7 +244,7 @@ class Jeu(object):
             # nb : en général, c'est un sous ensemble des pos avec capture possible
             # => ce qui donne les actions licites lors du 1er click
             # nb : le filtrage des pos de prise max se fera au second click
-            # 1 - click1 : ce sont celles qui sont de niveau 1 dans "l'arbre de capture"
+            # 1 - click1 : ce sont celles qui sont de niveau 1 dans "l'digraph de capture"
             # liste du ou des pions à capturer suite à ces 1er et 2nd click
             self.listePosInitPriseMax = []
             self.calculPosInitToutesCaptureMax(self.g)
@@ -255,12 +256,12 @@ class Jeu(object):
         pos_libre = self.posLibre(pos_arrivee)
         if len(self.g.nodes()) == 1:
             if self.matrice_jeu[pos_depart.x, pos_depart.y] in (1, 2):
-                boule =  pos_libre and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
+                boule = pos_libre and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesPion(self.pos_depart)
             else:  # cas où les pions sont des chefs  self.matrice_jeu[pos_depart.x, pos_depart.y] in (11, 12):
                 boule = pos_libre and (pos_arrivee.x, pos_arrivee.y) in self.posVoisinesChef(self.pos_depart)
         else:  # cas où il existe des prises possibles
             # On calcule la liste des pos finales => ce qui donne les actions licites lors du 2nd click
-            self.listePosFinalePriseMax=[]
+            self.listePosFinalePriseMax = []
             self.listePosFinalePriseMax = self.listeCoordNiveau(self.g, self.nivMax)
             # on calcule les positions des pions à capturer
         if (pos_arrivee.x, pos_arrivee.y) in self.listePosFinalePriseMax: boule = True
@@ -269,10 +270,10 @@ class Jeu(object):
 
     # def calculPosUneInitCaptureMax(self, g, coord_fin):
     #     """
-    #     Recherche récursivement la position de niveau 1 dans l'arbre de capture pour une
+    #     Recherche récursivement la position de niveau 1 dans l'digraph de capture pour une
     #     position finale donnant une prise max
-    #     On remonte l'arbre de la postion finale pour déterminer la position initiale correspondante.
-    #     :param g: arbre contenant les positions successives permettant de capturer des pions
+    #     On remonte l'digraph de la postion finale pour déterminer la position initiale correspondante.
+    #     :param g: digraph contenant les positions successives permettant de capturer des pions
     #     :param coord_fin: position finale après capture
     #     :return: modifie l'attribut de la classe jeu self.listePosInitPriseMax
     #     """
@@ -282,12 +283,12 @@ class Jeu(object):
     #         return
     #     self.calculPosUneInitCaptureMax(g, pred)
 
-    def calculPosUneInitCaptureMax(self, g, coord_fin,  coord_init =(-2,-2)):
+    def calculPosUneInitCaptureMax(self, g, coord_fin, coord_init=(-2, -2)):
         """
-        Recherche récursivement la position de niveau 1 dans l'arbre de capture pour une
+        Recherche récursivement la position de niveau 1 dans l'digraph de capture pour une
         position finale donnant une prise max
-        On remonte l'arbre de la postion finale pour déterminer la position initiale correspondante.
-        :param g: arbre contenant les positions successives permettant de capturer des pions
+        On remonte l'digraph de la postion finale pour déterminer la position initiale correspondante.
+        :param g: digraph contenant les positions successives permettant de capturer des pions
         :param coord_fin: position finale après capture
         :return: modifie l'attribut de la classe jeu self.listePosInitPriseMax
         """
@@ -295,11 +296,9 @@ class Jeu(object):
         if self.g.node[pred]['niveau'] == 1:
             self.listePosInitPriseMax.append(pred)
             if pred == coord_init:
-                self.dico[pred].append((i,j))
+                self.dico[pred].append((i, j))
             return
-        self.calculPosUneInitCaptureMax(g, pred,  coord_init =(-2,-2))
-
-
+        self.calculPosUneInitCaptureMax(g, pred, coord_init=(-2, -2))
 
     def calculPosInitToutesCaptureMax(self, g):
         """
@@ -311,12 +310,10 @@ class Jeu(object):
         for (i, j) in l:
             self.calculPosUneInitCaptureMax(self.g, (i, j))
 
-
-
     def calculCaptureMax(self, g, coord_fin):
         """
         Calcule la liste des positions des pions à capturer
-        :param g: arbre de capture
+        :param g: digraph de capture
         :param coord_fin: tuple = coordonnée pos finale pour prendre le max de pions
         :return: mise à jour de l'attribut self.listePosCaptureMax de la classe Jeu
         """
@@ -336,14 +333,14 @@ class Jeu(object):
     def listePriseMax(self, g):
         """
         Donne les positions licites pour le 2nd click du joueur courant
-        :param g: arbre de capture g
+        :param g: digraph de capture g
         :return: liste des pos de niveau donc de capture max obtenue par un "graphe en compréhension"
         """
         self.listePosFinalePriseMax = self.listePosNiveau(self, g, self.nivMax)
 
     def listeCoordNiveau(self, g, niveau):
         """
-        :param g: arbre de capture
+        :param g: digraph de capture
         :param niveau: niveau dont on cherche les noeuds
         :return: liste de noeuds de niveau = à niveau
         """
@@ -359,7 +356,7 @@ class Jeu(object):
             self.pos_arrivee = Position(i, j)  # affectation ajoutée pour rendre le code plus lisible
             self.click = 0
             if self.secondClickValide(self.pos_depart, self.pos_arrivee):
-                self.listePosCaptureMax= []
+                self.listePosCaptureMax = []
                 if len(self.g.nodes()) > 1:
                     self.calculCaptureMaxPos(self.g, self.pos_arrivee)
                 self.Play(self.pos_depart, self.pos_arrivee, self.listePosCaptureMax)

@@ -8,7 +8,8 @@ BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
 
 from constantes import *
 from model import Jeu, load_jeu
-from PyQt5.QtWidgets import QScrollArea, QScrollBar, QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, QFileDialog
+from PyQt5.QtWidgets import QScrollArea, QScrollBar, QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, \
+    QFileDialog
 from PyQt5.QtGui import QPainter, QPen, QPolygon, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize
 
@@ -35,7 +36,7 @@ class Window(QMainWindow):
         # print("self.winSize ", QDesktopWidget().height())
         self.ratioWinVsEcran = 1  # ratio d'occupation de la fenêtre vis à vis de l'écran
         self.resize(self.ratioWinVsEcran * self.winSize, self.ratioWinVsEcran * self.winSize)
-        self.ratio = 0.70 # ratio plateau vs ecran
+        self.ratio = 0.70  # ratio plateau vs ecran
         self.taillePlateau = self.winSize * self.ratio
         self.marge = (self.winSize - self.taillePlateau) / 2  # marge fenêtre
         self.tailleCase = self.taillePlateau / 8
@@ -99,7 +100,7 @@ class Window(QMainWindow):
         # Définition du central widget
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
-        self.centralWidget.setGeometry(0,0,self.winSize,self.winSize)
+        self.centralWidget.setGeometry(0, 0, self.winSize, self.winSize)
         # labels informant qui doit jouer
         self.haut = QLabel()
         self.haut.setParent(self.centralWidget)
@@ -202,8 +203,9 @@ class Window(QMainWindow):
                 icon.addPixmap(QPixmap(RESSOURCES + self.image_pion.get(mat_jeu[i][j], "")), QIcon.Normal, QIcon.Off)
                 self.btn[(i, j)].setIcon(icon)
 
+
 class Plateau(QWidget):
-    def __init__(self,win):
+    def __init__(self, win):
         super(Plateau, self).__init__(win)
         self.win = win
 
@@ -241,9 +243,9 @@ class Button(QPushButton):
         self.j = j
         self.win = win
         self.tailleBouton = self.win.tailleCase
-        self.setGeometry( QRect(self.win.marge - self.win.decalage + self.win.tailleCase * i,
-                      self.win.marge - self.win.decalage + self.win.tailleCase * j,
-                      self.win.tailleCase, self.win.tailleCase))
+        self.setGeometry(QRect(self.win.marge - self.win.decalage + self.win.tailleCase * i,
+                               self.win.marge - self.win.decalage + self.win.tailleCase * j,
+                               self.win.tailleCase, self.win.tailleCase))
         self.setFlat(True)
         self.setStyleSheet(TRANSPARENT)
         self.taillePion = int(self.win.tailleCase * 0.64)
