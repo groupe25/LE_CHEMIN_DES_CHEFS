@@ -3,22 +3,22 @@ from constantes import *
 import numpy as np
 from random import randint
 
-# from digraph import *
+from digraph import *
 
-try:
-    import networkx as nx
-    from networkx import DiGraph
-except ImportError:
-    print("module networkx non installé pour python 3.")
-    print("Pour l'installer si vous avez les droits root faire \
-    'pip3 install networkx' ou 'python3 -m install pip networkx' ")
-    print("Pour une installation sans droit root : télécharger networx (version 1.1) ")
-    print("car pb avec la 2, le copier dans le répertoire du projet,"
-          "se placer dans le dossier de networkx ett taper : python3 setup.py install --user")
-    print("En cas de problème avec pydot commenter les lignes")
-    print(" nx.write_dot(self.g, 'tree.dot")
-    print("os.system('dot -Tpng tree.dot -o tree.png')")
-    print(" Vous n'aurez le graphe au format png mais le programme devrait s'éxécuter.")
+# try:
+#     import networkx as nx
+#     from networkx import DiGraph
+# except ImportError:
+#     print("module networkx non installé pour python 3.")
+#     print("Pour l'installer si vous avez les droits root faire \
+#     'pip3 install networkx' ou 'python3 -m install pip networkx' ")
+#     print("Pour une installation sans droit root : télécharger networx (version 1.1) ")
+#     print("car pb avec la 2, le copier dans le répertoire du projet,"
+#           "se placer dans le dossier de networkx ett taper : python3 setup.py install --user")
+#     print("En cas de problème avec pydot commenter les lignes")
+#     print(" nx.write_dot(self.g, 'tree.dot")
+#     print("os.system('dot -Tpng tree.dot -o tree.png')")
+#     print(" Vous n'aurez le graphe au format png mais le programme devrait s'éxécuter.")
 
 
 class Position:
@@ -246,7 +246,7 @@ class Jeu(object):
             # 1 - click1 : ce sont celles qui sont de niveau 1 dans "l'arbre de capture"
             # liste du ou des pions à capturer suite à ces 1er et 2nd click
             self.listePosInitPriseMax = []
-            self.calculPosToutesCaptureMax(self.g)
+            self.calculPosInitToutesCaptureMax(self.g)
             if (pos.x, pos.y) in self.listePosInitPriseMax: boule = True
         return boule
 
@@ -267,20 +267,55 @@ class Jeu(object):
 
         return boule
 
-    def calculPosUneInitCaptureMax(self, g, coord_fin):
+    # def calculPosUneInitCaptureMax(self, g, coord_fin):
+    #     """
+    #     Recherche récursivement la position de niveau 1 dans l'arbre de capture pour une
+    #     position finale donnant une prise max
+    #     On remonte l'arbre de la postion finale pour déterminer la position initiale correspondante.
+    #     :param g: arbre contenant les positions successives permettant de capturer des pions
+    #     :param coord_fin: position finale après capture
+    #     :return: modifie l'attribut de la classe jeu self.listePosInitPriseMax
+    #     """
+    #     pred = self.g.predecessors(coord_fin)[0]
+    #     if self.g.node[pred]['niveau'] == 1:
+    #         self.listePosInitPriseMax.append(pred)
+    #         return
+    #     self.calculPosUneInitCaptureMax(g, pred)
+
+    def calculPosUneInitCaptureMax(self, g, coord_fin,  coord_init =(-2,-2)):
+        """
+        Recherche récursivement la position de niveau 1 dans l'arbre de capture pour une
+        position finale donnant une prise max
+        On remonte l'arbre de la postion finale pour déterminer la position initiale correspondante.
+        :param g: arbre contenant les positions successives permettant de capturer des pions
+        :param coord_fin: position finale après capture
+        :return: modifie l'attribut de la classe jeu self.listePosInitPriseMax
+        """
         pred = self.g.predecessors(coord_fin)[0]
         if self.g.node[pred]['niveau'] == 1:
             self.listePosInitPriseMax.append(pred)
+            if pred == coord_init:
+                self.dico[pred].append((i,j))
             return
-        self.calculPosUneInitCaptureMax(g, pred)
+        self.calculPosUneInitCaptureMax(g, pred,  coord_init =(-2,-2))
 
-    def calculPosToutesCaptureMax(self, g):
+
+
+    def calculPosInitToutesCaptureMax(self, g):
+        """
+        Calcule itérativement toute les positions initiales donnant une prise max
+        :param g:
+        :return:
+        """
         l = self.listeCoordNiveau(self.g, self.nivMax)
         for (i, j) in l:
             self.calculPosUneInitCaptureMax(self.g, (i, j))
 
+
+
     def calculCaptureMax(self, g, coord_fin):
         """
+        Calcule la liste des positions des pions à capturer
         :param g: arbre de capture
         :param coord_fin: tuple = coordonnée pos finale pour prendre le max de pions
         :return: mise à jour de l'attribut self.listePosCaptureMax de la classe Jeu
@@ -294,13 +329,13 @@ class Jeu(object):
 
     def calculCaptureMaxPos(self, g, pos):
         """
-        version de calculCaptureMax avec une position de type Position
+        version de calculCaptureMax avec la position de type Position
         """
         self.calculCaptureMax(g, (pos.x, pos.y))
 
     def listePriseMax(self, g):
         """
-        donne les positions licites pour le 2nd click du joueur courant
+        Donne les positions licites pour le 2nd click du joueur courant
         :param g: arbre de capture g
         :return: liste des pos de niveau donc de capture max obtenue par un "graphe en compréhension"
         """
