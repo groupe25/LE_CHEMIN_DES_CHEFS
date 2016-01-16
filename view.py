@@ -26,6 +26,7 @@ def initialise_jeu(filename):
                matrice_jeu)  # crée la fenetre, le plateau et le pavage du plateau par des boutons tranparents
     f.draw_pions(matrice_jeu)  # trace les pions
     f.show()
+    return f
 
 
 class Window(QMainWindow):

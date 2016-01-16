@@ -3,23 +3,21 @@ from constantes import *
 import numpy as np
 from random import randint
 
-from digraph import *
+try:
+    from networkx import *
+except ImportError:
+    print("module networkx non installé pour python 3.")
+    print("Pour l'installer si vous avez les droits root faire \
+    'pip3 install networkx' ou 'python3 -m install pip networkx' ")
+    print("Pour une installation sans droit root : télécharger networx (version 1.1) ")
+    print("car pb avec la 2, le copier dans le répertoire du projet,"
+          "se placer dans le dossier de networkx ett taper : python3 setup.py install --user")
+    print("En cas de problème avec pydot commenter les lignes")
+    print(" nx.write_dot(self.g, 'tree.dot")
+    print("os.system('dot -Tpng tree.dot -o tree.png')")
+    print(" Vous n'aurez pas le graphe au format png mais le programme devrait s'éxécuter.")
+    from digraph import *
 
-
-# try:
-#     import networkx as nx
-#     from networkx import DiGraph
-# except ImportError:
-#     print("module networkx non installé pour python 3.")
-#     print("Pour l'installer si vous avez les droits root faire \
-#     'pip3 install networkx' ou 'python3 -m install pip networkx' ")
-#     print("Pour une installation sans droit root : télécharger networx (version 1.1) ")
-#     print("car pb avec la 2, le copier dans le répertoire du projet,"
-#           "se placer dans le dossier de networkx ett taper : python3 setup.py install --user")
-#     print("En cas de problème avec pydot commenter les lignes")
-#     print(" nx.write_dot(self.g, 'tree.dot")
-#     print("os.system('dot -Tpng tree.dot -o tree.png')")
-#     print(" Vous n'aurez le graphe au format png mais le programme devrait s'éxécuter.")
 
 
 class Position:
@@ -234,9 +232,9 @@ class Jeu(object):
             # décommenter cette ligne pour obtenir le dessin du graphe au format png
             # graphviz nécessaire (install via yum sur les distrib red-hat like) + problème pydot probable.
             # le fichier de test est 0_testCaptureMax.txt
-            import os
-            nx.write_dot(self.g, 'tree.dot')
-            os.system('dot -Tpng tree.dot -o tree.png')
+            # import os
+            # nx.write_dot(self.g, 'tree.dot')
+            # os.system('dot -Tpng tree.dot -o tree.png')
             ##################################################################################################
             #########
             # A l'aide du graphe obtenu, on détermine ensuite :
