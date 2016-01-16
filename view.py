@@ -8,7 +8,7 @@ BACKUPS_DIR = os.getcwd() + os.sep + "game_backups" + os.sep
 
 from constantes import *
 from model import Jeu, load_jeu
-from PyQt5.QtWidgets import QScrollArea, QScrollBar, QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, \
+from PyQt5.QtWidgets import QWidget, QDesktopWidget, QMainWindow, qApp, QPushButton, QLabel, \
     QFileDialog
 from PyQt5.QtGui import QPainter, QPen, QPolygon, QIcon, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QRect, QSize
@@ -171,11 +171,12 @@ class Window(QMainWindow):
         self.information.setText("")
         self.haut.setText("")
         self.bas.setText("")
-        txt = "A VOUS DE JOUER, JOUEUR {} !!!!!".format(num_joueur)
-        if num_joueur == 1:
-            self.haut.setText(txt)
-        else:
-            self.bas.setText(txt)
+        if num_joueur in (1,2) :
+            txt = "A VOUS DE JOUER, JOUEUR {} !!!!!".format(num_joueur)
+            if num_joueur == 1:
+                self.haut.setText(txt)
+            else:
+                self.bas.setText(txt)
 
     def afficheInfo(self, txt, width=250):
         """
@@ -260,8 +261,8 @@ class Button(QPushButton):
         self.win.draw_pions(self.win.jeu.matrice_jeu)
         # print("player courant = ", self.win.jeu.player)
         self.win.affichePlayerCourant(self.win.jeu.player)
-        if self.win.jeu.matrice_jeu[4, 4] in (11, 12):
-            txt = "THE WINNER IS PLAYER " + str(self.win.jeu.matrice_jeu[4, 4] - 10)
-            self.win.afficheInfo(txt)
+        if self.win.jeu.winner() != '' :
+            self.win.affichePlayerCourant(3) # efface l'annonce aux players
+            self.win.afficheInfo(self.win.jeu.winner())
         elif self.win.jeu.info:
             self.win.afficheInfo(self.win.jeu.info, 2000)

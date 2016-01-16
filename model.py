@@ -19,7 +19,6 @@ except ImportError:
     from digraph import *
 
 
-
 class Position:
     def __init__(self, x, y):
         self.x = x
@@ -74,8 +73,12 @@ class Jeu(object):
         if i + 1 <= long_chemin - 1: l.append(CHEMIN[i + 1])
         return l
 
-    def partieTerminee(self):
-        return self.matrice[4, 4] in (11, 12)
+    def winner(self):
+        txt = ''
+        if self.matrice_jeu[4, 4] > 10:
+            txt = "THE WINNER IS PLAYER " + str(self.matrice_jeu[4, 4] - 10)
+            self.click = 3
+        return txt
 
     def listePosAdversesVoisines(self, pos):
         """
@@ -344,7 +347,6 @@ class Jeu(object):
         """
         return [(i, j) for (i, j) in g if g.node[(i, j)]['niveau'] == niveau]
 
-
     def jouer(self, i, j):
         pos = Position(i, j)
         self.info = ""
@@ -364,6 +366,10 @@ class Jeu(object):
             self.info = "CLICK INVALIDE OU REGLE DE LA PRISE MAX OBLIGATOIRE NON RESPECTEE ! "
         if not self.centralPosOk(self.pos_depart, self.pos_arrivee):
             self.info = "POSITION CENTRALE INTERDITE AUX SOLDATS ! "
+        if len(self.g.nodes()) > 1:
+            if (self.pos_arrivee.x, self.pos_arrivee.y) not in self.listePosFinalePriseMax \
+                    or not (self.pos_depart.x, self.pos_depart.y) in self.listePosInitPriseMax:
+                self.info = "PRISE MAX OBLIGATOIRE : CLIQUER A NOUVEAU SUR LE PION DE DEPART PUIS SUR UNE POSITION DONNANT UNE PRISE MAX !"
 
     def posLibre(self, pos):
         return self.matrice_jeu[pos.x, pos.y] == 0
