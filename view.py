@@ -171,7 +171,7 @@ class Window(QMainWindow):
         self.information.setText("")
         self.haut.setText("")
         self.bas.setText("")
-        if num_joueur in (1,2) :
+        if num_joueur in (1, 2):
             txt = "A VOUS DE JOUER, JOUEUR {} !!!!!".format(num_joueur)
             if num_joueur == 1:
                 self.haut.setText(txt)
@@ -255,14 +255,11 @@ class Button(QPushButton):
 
     def mousePressEvent(self, event):
         event.accept()
-        # print("souris pressed sur bouton : ", self.i, "  ", self.j)
         self.win.jeu.jouer(self.i, self.j)
-        # print("click ", self.win.jeu.click)
         self.win.draw_pions(self.win.jeu.matrice_jeu)
-        # print("player courant = ", self.win.jeu.player)
         self.win.affichePlayerCourant(self.win.jeu.player)
-        if self.win.jeu.winner() != '' :
-            self.win.affichePlayerCourant(3) # efface l'annonce aux players
+        if self.win.jeu.winner() != '':
+            self.win.affichePlayerCourant(3)  # efface l'annonce aux players
             self.win.afficheInfo(self.win.jeu.winner())
         elif self.win.jeu.info:
             self.win.afficheInfo(self.win.jeu.info, 2000)
